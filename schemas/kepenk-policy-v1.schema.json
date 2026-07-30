@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/bilgi-ship-it/kepenk/main/schemas/kepenk-policy-v1.schema.json",
+  "title": "Kepenk Policy v1",
+  "description": "Schema for deterministic Kepenk approval and audit policies.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version"],
+  "properties": {
+    "version": {
+      "const": 1,
+      "description": "Policy format version."
+    },
+    "default": {
+      "$ref": "#/$defs/effect",
+      "default": "approval",
+      "description": "Decision used when no rule matches."
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/nonEmptyString",
+          "default": ".kepenk/audit.jsonl",
+          "description": "Path of the hash-chained JSONL audit log."
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "effect": {
+      "type": "string",
+      "enum": ["allow", "approval", "deny"]
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "stringOrStringArray": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        }
+      ]
+    },
+    "metadataScalar": {
+      "type": ["string", "number", "integer", "boolean", "null"]
+    },
+    "metadataValue": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/metadataScalar"
+        },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/metadataScalar"
+          }
+        }
+      ]
+    },
+    "match": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/stringOrStringArray",
+          "description": "Action type or accepted action types."
+        },
+        "command_regex": {
+          "$ref": "#/$defs/stringOrStringArray",
+          "description": "Python-compatible regular expression or expressions matched against the command."
+        },
+        "command_contains": {
+          "$ref": "#/$defs/stringOrStringArray",
+          "description": "Substring or substrings that must all occur in the command."
+        },
+        "path_glob": {
+          "$ref": "#/$defs/stringOrStringArray",
+          "description": "fnmatch-compatible path glob or globs."
+        },
+        "host_glob": {
+          "$ref": "#/$defs/stringOrStringArray",
+          "description": "fnmatch-compatible host glob or globs."
+        },
+        "metadata": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "$ref": "#/$defs/metadataValue"
+          },
+          "description": "Exact metadata values accepted by the rule."
+        }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "effect", "match"],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "effect": {
+          "$ref": "#/$defs/effect"
+        },
+        "reason": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "match": {
+          "$ref": "#/$defs/match"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "version": 1,
+      "default": "approval",
+      "audit": {
+        "path": ".kepenk/audit.jsonl"
+      },
+      "rules": [
+        {
+          "id": "allow-tests",
+          "effect": "allow",
+          "reason": "Local test commands are low risk.",
+          "match": {
+            "action": "shell",
+            "command_regex": "(^|\\s)(pytest|python\\s+-m\\s+pytest)(\\s|$)"
+          }
+        }
+      ]
+    }
+  ]
+}

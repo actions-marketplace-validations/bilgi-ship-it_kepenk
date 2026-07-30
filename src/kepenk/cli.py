@@ -23,7 +23,11 @@ def _parser() -> argparse.ArgumentParser:
         prog="kepenk",
         description="Deterministic approval and audit gate for AI agent actions.",
     )
-    parser.add_argument("--policy", default="kepenk.yaml", help="Policy path (default: kepenk.yaml)")
+    parser.add_argument(
+        "--policy",
+        default="kepenk.yaml",
+        help="Policy path (default: kepenk.yaml)",
+    )
     sub = parser.add_subparsers(dest="subcommand", required=True)
 
     init = sub.add_parser("init", help="Create a conservative starter policy")

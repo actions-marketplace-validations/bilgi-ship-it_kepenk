@@ -17,7 +17,7 @@ rules:
     reason: destructive
     match:
       action: shell
-      command_regex: 'rm\\s+-rf'
+      command_regex: 'rm\s+-rf'
   - id: allow-python
     effect: allow
     reason: allowed
@@ -32,6 +32,8 @@ rules:
 
 def test_check_exit_codes(tmp_path: Path) -> None:
     policy = _write_policy(tmp_path)
-    assert main(["--policy", str(policy), "check", "--action", "shell", "--command", "rm -rf x"]) == EXIT_DENIED
-    assert main(["--policy", str(policy), "check", "--action", "shell", "--command", "echo hi"]) == EXIT_APPROVAL_NOT_GRANTED
-    assert main(["--policy", str(policy), "check", "--action", "shell", "--command", "python -V"]) == 0
+    prefix = ["--policy", str(policy), "check", "--action", "shell", "--command"]
+
+    assert main([*prefix, "rm -rf x"]) == EXIT_DENIED
+    assert main([*prefix, "echo hi"]) == EXIT_APPROVAL_NOT_GRANTED
+    assert main([*prefix, "python -V"]) == 0

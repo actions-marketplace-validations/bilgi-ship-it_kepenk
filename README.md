@@ -47,24 +47,35 @@ rules:
     reason: Recursive deletion of a root-like path is never allowed.
     match:
       action: shell
-      command_regex: '(^|\\s)(rm|sudo\\s+rm)\\s+-[^\\n]*r[^\\n]*\\s+(/|/\\*|~)(\\s|$)'
+      command_regex: '(^|\s)(rm|sudo\s+rm)\s+-[^\n]*r[^\n]*\s+(/|/\*|~)(\s|$)'
 
   - id: require-approval-for-push
     effect: approval
     reason: Publishing code requires human approval.
     match:
       action: shell
-      command_regex: '(^|\\s)git\\s+push(\\s|$)'
+      command_regex: '(^|\s)git\s+push(\s|$)'
 
   - id: allow-tests
     effect: allow
     reason: Local test commands are low risk.
     match:
       action: shell
-      command_regex: '(^|\\s)(pytest|python\\s+-m\\s+pytest)(\\s|$)'
+      command_regex: '(^|\s)(pytest|python\s+-m\s+pytest)(\s|$)'
 ```
 
 Rules are evaluated in order; the first matching rule wins. When no rule matches, `default` is used.
+
+### Policy schema and editor support
+
+The versioned JSON Schema is available at [`schemas/kepenk-policy-v1.schema.json`](schemas/kepenk-policy-v1.schema.json). Editors that support YAML language-server directives can enable validation and autocomplete with:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bilgi-ship-it/kepenk/main/schemas/kepenk-policy-v1.schema.json
+version: 1
+```
+
+The schema catches structural errors early. Kepenk still performs its own deterministic, fail-closed runtime validation before evaluating a policy.
 
 ## CLI
 

@@ -33,7 +33,9 @@ class PolicyEngine:
         for key, expected in rule.match.items():
             if key == "action" and not self._value_matches(action.type, expected):
                 return False
-            if key == "command_regex" and not self._regex_matches(action.command, expected, rule.id):
+            if key == "command_regex" and not self._regex_matches(
+                action.command, expected, rule.id
+            ):
                 return False
             if key == "command_contains" and not self._contains_matches(action.command, expected):
                 return False
@@ -80,7 +82,11 @@ class PolicyEngine:
         if actual is None:
             return False
         patterns: Iterable[Any] = self._as_list(expected)
-        return any(fnmatch.fnmatch(actual, pattern) for pattern in patterns if isinstance(pattern, str))
+        return any(
+            fnmatch.fnmatch(actual, pattern)
+            for pattern in patterns
+            if isinstance(pattern, str)
+        )
 
     def _metadata_matches(self, actual: Mapping[str, Any], expected: Any) -> bool:
         if not isinstance(expected, dict):

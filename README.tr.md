@@ -24,4 +24,15 @@ kepenk check --action shell --command "git push origin main"
 kepenk run -- python -m pytest
 ```
 
+## Politika şeması ve editör desteği
+
+Sürüm 1 JSON Schema dosyası [`schemas/kepenk-policy-v1.schema.json`](schemas/kepenk-policy-v1.schema.json) konumundadır. YAML dil sunucusunu destekleyen editörlerde doğrulama ve otomatik tamamlama için politika dosyasının başına şu satırı ekleyebilirsiniz:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bilgi-ship-it/kepenk/main/schemas/kepenk-policy-v1.schema.json
+version: 1
+```
+
+Şema, yapısal hataları daha kod çalışmadan gösterir. Kepenk ayrıca çalışma anında kendi deterministik ve hata durumunda kapalı kalan doğrulamasını uygular.
+
 Ana dokümantasyon için [README.md](README.md) dosyasına bakın.
