@@ -1,0 +1,52 @@
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit.jsonl
+
+rules:
+  - id: deny-destructive-root-delete
+    effect: deny
+    reason: Recursive deletion of a root-like path is never allowed.
+    match:
+      action: shell
+      command_regex: '(^|\s)(rm|sudo\s+rm)\s+-[^\n]*r[^\n]*\s+(/|/\*|~)(\s|$)'
+
+  - id: deny-secret-file-write
+    effect: deny
+    reason: Agents must not write common secret files.
+    match:
+      action: filesystem.write
+      path_glob:
+        - "**/.env"
+        - "**/.env.*"
+        - "**/*credentials*.json"
+        - "**/*service-account*.json"
+
+  - id: require-approval-for-push
+    effect: approval
+    reason: Publishing code requires human approval.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+push(\s|$)'
+
+  - id: require-approval-for-package-publish
+    effect: approval
+    reason: Package publishing is externally visible and difficult to reverse.
+    match:
+      action: shell
+      command_regex: '(^|\s)(npm\s+publish|twine\s+upload|cargo\s+publish)(\s|$)'
+
+  - id: allow-local-tests
+    effect: allow
+    reason: Local test commands are low risk.
+    match:
+      action: shell
+      command_regex: '(^|\s)(pytest|python\s+-m\s+pytest|npm\s+test|pnpm\s+test)(\s|$)'
+
+  - id: allow-read-only-git
+    effect: allow
+    reason: Read-only Git inspection is low risk.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+(status|diff|log|show)(\s|$)'

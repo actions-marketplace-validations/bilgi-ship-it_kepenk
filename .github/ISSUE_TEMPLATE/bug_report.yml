@@ -1,0 +1,31 @@
+name: Bug report
+description: Report incorrect or unsafe behavior
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include the policy, action, decision, and expected behavior.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Kepenk version or commit
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+    validations:
+      required: true
+  - type: checkboxes
+    id: security
+    attributes:
+      label: Security check
+      options:
+        - label: This is not a private security vulnerability. I read SECURITY.md.
+          required: true

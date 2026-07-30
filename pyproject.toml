@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kepenk-gate"
+version = "0.1.0"
+description = "A deterministic approval and audit gate for AI coding agents."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Samet Celikci" }
+]
+keywords = ["ai-agents", "codex", "guardrails", "policy", "security", "audit"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = [
+  "PyYAML>=6.0.2,<7",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "ruff>=0.9,<1",
+  "mypy>=1.14,<2",
+  "types-PyYAML>=6.0.12",
+]
+
+[project.scripts]
+kepenk = "kepenk.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/bilgi-ship-it/kepenk"
+Repository = "https://github.com/bilgi-ship-it/kepenk"
+Issues = "https://github.com/bilgi-ship-it/kepenk/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["kepenk"]

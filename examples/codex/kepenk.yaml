@@ -1,0 +1,23 @@
+version: 1
+default: approval
+audit:
+  path: .kepenk/audit.jsonl
+rules:
+  - id: deny-secrets
+    effect: deny
+    reason: Secret material must not be changed by an agent.
+    match:
+      action: filesystem.write
+      path_glob: ["**/.env", "**/.env.*", "**/*credentials*.json"]
+  - id: approve-git-push
+    effect: approval
+    reason: Remote repository changes require a maintainer.
+    match:
+      action: shell
+      command_regex: '(^|\\s)git\\s+push(\\s|$)'
+  - id: allow-quality-checks
+    effect: allow
+    reason: Local quality checks are reversible.
+    match:
+      action: shell
+      command_regex: '(^|\\s)(pytest|ruff|mypy)(\\s|$)'
