@@ -114,6 +114,10 @@ Exit codes:
 
 See [ROADMAP.md](ROADMAP.md) for planned adapters and integrations.
 
+## Integrations
+
+- [Codex integration](docs/integrations/codex.md): non-interactive `check`, `run`, and explicit `approve` workflow with a sample policy and `AGENTS.md`.
+
 ## Security
 
 Read [SECURITY.md](SECURITY.md) before production use. Report vulnerabilities privately.

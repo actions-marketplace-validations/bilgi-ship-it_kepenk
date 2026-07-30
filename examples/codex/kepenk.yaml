@@ -1,23 +1,49 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bilgi-ship-it/kepenk/main/schemas/kepenk-policy-v1.schema.json
 version: 1
 default: approval
+
 audit:
-  path: .kepenk/audit.jsonl
+  path: .kepenk/codex-audit.jsonl
+
 rules:
-  - id: deny-secrets
+  - id: deny-destructive-delete
     effect: deny
-    reason: Secret material must not be changed by an agent.
-    match:
-      action: filesystem.write
-      path_glob: ["**/.env", "**/.env.*", "**/*credentials*.json"]
-  - id: approve-git-push
-    effect: approval
-    reason: Remote repository changes require a maintainer.
+    reason: Recursive deletion is blocked for coding agents.
     match:
       action: shell
-      command_regex: '(^|\\s)git\\s+push(\\s|$)'
+      command_regex: '(^|\s)(rm|sudo\s+rm)\s+-[^\n]*r[^\n]*(\s|$)'
+
+  - id: deny-secret-file-changes
+    effect: deny
+    reason: Secret-bearing files must not be changed by an agent.
+    match:
+      action: shell
+      command_regex: '(^|\s)(>|>>|tee|sed\s+-i|perl\s+-pi).*\.(env|pem|key)(\s|$)'
+
+  - id: require-approval-for-remote-git
+    effect: approval
+    reason: Remote Git changes require explicit maintainer approval.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+(push|remote\s+(add|set-url)|tag)(\s|$)'
+
+  - id: require-approval-for-publishing
+    effect: approval
+    reason: Package and release publishing requires explicit approval.
+    match:
+      action: shell
+      command_regex: '(^|\s)(twine\s+upload|npm\s+publish|gh\s+release\s+create)(\s|$)'
+
   - id: allow-quality-checks
     effect: allow
-    reason: Local quality checks are reversible.
+    reason: Local tests and static checks are reversible.
     match:
       action: shell
-      command_regex: '(^|\\s)(pytest|ruff|mypy)(\\s|$)'
+      command_regex: '(^|\s)(pytest|python\s+-m\s+pytest|ruff|mypy)(\s|$)'
+
+  - id: allow-read-only-git
+    effect: allow
+    reason: Read-only Git inspection is safe.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+(status|diff|log|show)(\s|$)'
