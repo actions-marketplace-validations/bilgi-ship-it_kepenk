@@ -20,8 +20,6 @@ Kepenk follows a GitHub-first release strategy. Public PyPI publication is usefu
 
 ## v0.2 — Usable agent integrations
 
-The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate from other tools.
-
 - [x] structured stdin/stdout protocol ([#18](https://github.com/bilgi-ship-it/kepenk/issues/18))
 - [x] at least 10 real-world policy packs ([#19](https://github.com/bilgi-ship-it/kepenk/issues/19))
 - [x] three reproducible agent-safety demos ([#20](https://github.com/bilgi-ship-it/kepenk/issues/20))
@@ -38,7 +36,7 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 - [x] repository-scoped approval contexts ([#39](https://github.com/bilgi-ship-it/kepenk/issues/39))
 - [x] signed approval receipts ([#40](https://github.com/bilgi-ship-it/kepenk/issues/40))
 - [x] audit export in SARIF format ([#41](https://github.com/bilgi-ship-it/kepenk/issues/41))
-- [ ] OpenTelemetry-compatible audit export
+- [x] tagged `v0.3.0` GitHub Release with verified wheel and source distribution ([#60](https://github.com/bilgi-ship-it/kepenk/issues/60))
 
 ## v0.4 — Adoption and ecosystem evidence
 
@@ -48,6 +46,8 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 - [x] documented maintainer response and release cadence ([#55](https://github.com/bilgi-ship-it/kepenk/issues/55))
 - [ ] anonymized adoption and usage evidence
 - [ ] public case studies with reproducible configuration
+- [ ] OpenTelemetry-compatible redacted audit export ([#59](https://github.com/bilgi-ship-it/kepenk/issues/59))
+- [ ] additional CI-provider integration guides ([#57](https://github.com/bilgi-ship-it/kepenk/issues/57), [#58](https://github.com/bilgi-ship-it/kepenk/issues/58))
 
 ## v1.0 — Stable policy contract
 
