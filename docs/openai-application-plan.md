@@ -1,43 +1,97 @@
-# OpenAI Codex for Open Source application plan
+# OpenAI Codex for Open Source application package
 
-Do not submit this application immediately after creating the repository. First create evidence of active maintenance and meaningful usage. OpenAI does not publish a minimum star or download threshold, so the targets below are internal credibility goals, not official requirements.
+**Prepared:** 2026-07-31  
+**Repository:** `https://github.com/bilgi-ship-it/kepenk`  
+**Public evidence:** [`project-evidence.md`](project-evidence.md)
 
-## Suggested evidence targets
+The official Codex for Open Source form is reviewed on a rolling basis. It asks for an active public open-source repository, maintainer role, ecosystem importance or usage evidence, requested support, an OpenAI Organization ID, and a concrete API-credit plan.
 
-Aim to have several of these before applying:
+The form does not publish a numeric minimum for stars or downloads. Kepenk can be submitted now with an honest clear-importance argument. The application becomes stronger after the first independent adopter or reviewed outside contribution.
 
-- 3 or more tagged releases
-- active issues and pull-request review
-- 5 or more external repositories or maintainers using Kepenk
-- at least 2 contributors outside the founding team
-- package download statistics or documented installations
-- a public security policy and a maintained changelog
-- recent commits across multiple weeks
-- one public integration: Codex wrapper, GitHub Action, pre-commit hook, or MCP adapter
+## Current truthful evidence
 
-## Form draft
+- primary maintainer: `bilgi-ship-it`;
+- public Apache-2.0 repository;
+- four tagged GitHub releases through verified `v0.3.0`;
+- Ubuntu and Windows CI on Python 3.11 and 3.13;
+- public security, compatibility, maintenance and release processes;
+- CLI, JSONL, GitHub Action, pre-commit and MCP surfaces;
+- one reproducible founding-team public pilot;
+- zero verified independent adopters;
+- zero recorded outside contributors;
+- unassigned `good first issue` and `help wanted` work kept open for genuine external contribution.
+
+Do not replace the final three facts with goals or estimates.
+
+## Form-ready answers
+
+### GitHub username
+
+`bilgi-ship-it`
+
+The GitHub profile must remain public.
+
+### GitHub repository URL
+
+`https://github.com/bilgi-ship-it/kepenk`
+
+The repository must remain public.
 
 ### Role
 
-Primary maintainer
+**Primary maintainer**
 
-### Why does this repository qualify? (maximum 500 characters)
+### Why does this repository qualify?
 
-Kepenk is a provider-neutral, local-first approval and tamper-evident audit gate for AI coding agents. It is used by [N] repositories or maintainers, has [STARS/DOWNLOADS], and addresses a growing ecosystem need: deterministic policy and human approval before agents perform irreversible shell, Git, release, and infrastructure actions. I maintain releases, review PRs, triage issues, and handle security reports.
+Maximum allowed: 500 characters. Current draft: 366 characters.
 
-### How will you use API credits? (maximum 500 characters)
+> Kepenk is an Apache-2.0, provider-neutral safety gate for AI coding agents. It gives maintainers deterministic allow/approval/deny policy checks, tamper-evident audit logs, SARIF export, signed approval receipts, and CI/MCP integrations. The project has four tagged releases, cross-platform CI, public maintenance/security processes, and a reproducible public pilot.
 
-We will use credits for core OSS maintenance: reproducing issues, reviewing pull requests, generating and validating cross-platform policy packs, building release automation, creating regression tests from security reports, and maintaining adapters for Codex, GitHub Actions, and MCP. Credits will not be used for Ustaca's proprietary product or customer workloads.
+### Requested support
 
-### Anything else we should know? (maximum 500 characters)
+Select both where available:
 
-Kepenk originated from real safety needs in an AI-native SaaS team but is developed as a clean-room, vendor-neutral public project under Apache-2.0. The commercial codebase is not included. Our goal is a small, auditable building block that maintainers can adopt without a hosted service, telemetry, or model lock-in.
+- Codex Security;
+- API credits for the project.
 
-## Required fields to collect before submission
+Selection does not imply eligibility or approval.
 
-- Email associated with the applicant's ChatGPT account
-- Public GitHub username
-- Public repository URL
-- OpenAI Organization ID
-- Current GitHub stars, contributors, forks, releases, and issue activity
-- Current package download or adoption evidence
+### How will you use API credits for your project?
+
+Maximum allowed: 500 characters. Current draft: 383 characters.
+
+> We will use API credits only for Kepenk’s public open-source maintenance: reproducing issues, reviewing pull requests, generating regression and adversarial tests, validating Ubuntu/Windows behavior, maintaining Codex, GitHub Actions and MCP integrations, triaging security reports, and automating verified releases. Credits will not support Ustaca customer or proprietary workloads.
+
+### Anything else we should know?
+
+Maximum allowed: 500 characters. Current draft: 378 characters.
+
+> Kepenk came from real agent-safety needs in an AI-native team, but the repository is a clean, vendor-neutral Apache-2.0 project with no hosted service, telemetry, or proprietary source. Current evidence is stated plainly: one founding-team public pilot, no verified independent adopters yet, and open newcomer issues intended to build genuine external contribution and adoption.
+
+## Private fields required at submission
+
+These values must be entered directly into the official form and must not be committed to the public repository:
+
+- applicant first and last name;
+- email associated with the applicant's ChatGPT account;
+- OpenAI Organization ID;
+- any account, billing or credential information requested by the form.
+
+## Pre-submission verification
+
+Immediately before submission:
+
+1. confirm the current verified release in `README.md`;
+2. confirm the public GitHub profile and repository visibility;
+3. read [`project-evidence.md`](project-evidence.md) and update any changed counts;
+4. verify the Ustaca AI pilot links and public workflow run;
+5. check open and merged outside pull requests;
+6. update independent-adopter and outside-contributor counts honestly;
+7. re-count all form answers after any edits;
+8. enter the private email and Organization ID only on the official OpenAI form.
+
+## Decision record
+
+Submitting now is defensible because the project has a clear maintainer-workflow purpose, active maintenance evidence, four verified releases, cross-platform quality controls and a public reproducible integration.
+
+Waiting for one independent adopter or reviewed outside contribution would improve the usage and community evidence. Neither outcome should be fabricated, purchased, or represented by another founding-team repository.
