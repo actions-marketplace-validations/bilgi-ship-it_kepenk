@@ -50,6 +50,24 @@ kepenk run -- python -m pytest
 
 The generated `kepenk.yaml` starts with conservative defaults. Safe local tests can be allowed, publishing actions can require approval, and destructive actions can be denied.
 
+## Policy packs
+
+Start from a reviewed example instead of writing every rule from scratch:
+
+| Pack | Allows | Requires approval | Denies |
+|---|---|---|---|
+| [Python development](examples/policies/python-development.yaml) | tests, lint, type checks, local builds | dependency installation, package publishing | recursive deletion of root-like paths |
+| [Git maintenance](examples/policies/git-maintenance.yaml) | status, diff, log and read-only inspection | push and history changes | force-push, hard reset, aggressive clean |
+| [Docker maintenance](examples/policies/docker-maintenance.yaml) | state and configuration inspection | builds, runs and registry operations | system prune, volume deletion, forced removal |
+
+```bash
+cp examples/policies/python-development.yaml kepenk.yaml
+kepenk validate
+kepenk check --action shell --command "python -m pytest"
+```
+
+Every committed policy pack is validated in CI and covered by representative allow, approval and deny tests. Review and adapt a pack before use; these examples are not universal security policies. See [the policy-pack guide](examples/policies/README.md).
+
 ## Development installation
 
 ```bash
@@ -87,7 +105,7 @@ rules:
 
   - id: allow-tests
     effect: allow
-    reason: Local test commands are low risk.
+    reason: Local tests are low risk.
     match:
       action: shell
       command_regex: '(^|\s)(pytest|python\s+-m\s+pytest)(\s|$)'

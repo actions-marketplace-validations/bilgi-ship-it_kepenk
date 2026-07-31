@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-python-development.jsonl
+
+rules:
+  - id: deny-destructive-root-delete
+    effect: deny
+    reason: Recursive deletion of a root-like path is never allowed.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:sudo\s+)?rm\s+-[^\n]*r[^\n]*\s+(?:/|/\*|~)(?:\s|$)'
+
+  - id: require-approval-for-package-upload
+    effect: approval
+    reason: Publishing a Python package changes a public or shared registry.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:twine\s+upload|python(?:3(?:\.\d+)?)?\s+-m\s+twine\s+upload)(?:\s|$)'
+
+  - id: require-approval-for-dependency-install
+    effect: approval
+    reason: Installing dependencies can execute third-party build hooks and modify the environment.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:pip(?:3)?\s+install|python(?:3(?:\.\d+)?)?\s+-m\s+pip\s+install|uv\s+(?:add|sync)|poetry\s+(?:add|install))(?:\s|$)'
+
+  - id: allow-python-tests
+    effect: allow
+    reason: Running the local Python test suite is a low-risk development action.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:pytest|python(?:3(?:\.\d+)?)?\s+-m\s+pytest)(?:\s|$)'
+
+  - id: allow-python-lint-and-types
+    effect: allow
+    reason: Static analysis reads project files and reports findings.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)ruff\s+(?:check|format\s+--check)(?:\s|$)'
+        - '(^|\s)mypy(?:\s|$)'
+        - '(^|\s)python(?:3(?:\.\d+)?)?\s+-m\s+compileall(?:\s|$)'
+
+  - id: allow-local-package-build
+    effect: allow
+    reason: Building local wheel and source artifacts does not publish them.
+    match:
+      action: shell
+      command_regex: '(^|\s)python(?:3(?:\.\d+)?)?\s+-m\s+build(?:\s|$)'

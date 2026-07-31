@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-git-maintenance.jsonl
+
+rules:
+  - id: deny-force-push
+    effect: deny
+    reason: Force-pushing can rewrite shared history and discard collaborators' work.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+push\b[^\n]*(?:--force(?:-with-lease)?|-f)(?:\s|$)'
+
+  - id: deny-hard-reset
+    effect: deny
+    reason: A hard reset can irreversibly discard uncommitted work.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+reset\b[^\n]*--hard(?:\s|$)'
+
+  - id: deny-aggressive-clean
+    effect: deny
+    reason: Aggressive git clean can delete ignored and untracked files.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+clean\b[^\n]*-(?:[^\s]*f[^\s]*d[^\s]*x|[^\s]*x[^\s]*d[^\s]*f)(?:\s|$)'
+
+  - id: require-approval-for-push
+    effect: approval
+    reason: Pushing changes modifies a remote repository.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+push(?:\s|$)'
+
+  - id: require-approval-for-history-change
+    effect: approval
+    reason: Commit, merge, rebase, tag, and branch deletion operations change repository history.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)git\s+(?:commit|merge|rebase|cherry-pick|revert|tag)(?:\s|$)'
+        - '(^|\s)git\s+branch\b[^\n]*(?:-d|-D|--delete)(?:\s|$)'
+        - '(^|\s)gh\s+release\s+(?:create|delete|edit)(?:\s|$)'
+
+  - id: allow-read-only-git-inspection
+    effect: allow
+    reason: Read-only Git inspection does not change the working tree or remote state.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)git\s+(?:status|diff|log|show|rev-parse|ls-files|ls-tree|remote\s+-v)(?:\s|$)'
+        - '(^|\s)git\s+branch\s+--show-current(?:\s|$)'
+        - '(^|\s)gh\s+(?:issue|pr)\s+(?:list|view|status)(?:\s|$)'

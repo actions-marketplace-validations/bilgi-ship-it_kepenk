@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-docker-maintenance.jsonl
+
+rules:
+  - id: deny-system-prune
+    effect: deny
+    reason: Docker system prune can remove images, containers, networks, and build cache broadly.
+    match:
+      action: shell
+      command_regex: '(^|\s)docker\s+system\s+prune(?:\s|$)'
+
+  - id: deny-volume-removal
+    effect: deny
+    reason: Removing Docker volumes can permanently delete application data.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)docker\s+volume\s+(?:rm|prune)(?:\s|$)'
+        - '(^|\s)docker\s+compose\s+down\b[^\n]*-v(?:\s|$)'
+
+  - id: deny-forced-container-removal
+    effect: deny
+    reason: Forced container removal can interrupt running workloads without a graceful shutdown.
+    match:
+      action: shell
+      command_regex: '(^|\s)docker\s+(?:container\s+)?rm\b[^\n]*(?:--force|-f)(?:\s|$)'
+
+  - id: require-approval-for-registry-change
+    effect: approval
+    reason: Login, push, and pull operations access a remote registry and may expose credentials or change shared artifacts.
+    match:
+      action: shell
+      command_regex: '(^|\s)docker\s+(?:login|logout|push|pull)(?:\s|$)'
+
+  - id: require-approval-for-build-or-run
+    effect: approval
+    reason: Building or running containers can execute untrusted instructions and modify local resources.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)docker\s+(?:build|buildx\s+build|run|start|stop|restart|exec)(?:\s|$)'
+        - '(^|\s)docker\s+compose\s+(?:build|up|down|start|stop|restart|run|exec)(?:\s|$)'
+
+  - id: allow-read-only-docker-inspection
+    effect: allow
+    reason: Docker inspection commands read local state without changing workloads.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)docker\s+(?:version|info|ps|images|inspect|history|stats\s+--no-stream)(?:\s|$)'
+        - '(^|\s)docker\s+compose\s+(?:config|ps|images)(?:\s|$)'
