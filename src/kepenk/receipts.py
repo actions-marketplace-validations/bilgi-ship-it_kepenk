@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import json
 import os
@@ -249,7 +250,7 @@ def _signature_decode(value: Any) -> bytes:
     padding = "=" * (-len(text) % 4)
     try:
         decoded = base64.b64decode(text + padding, altchars=b"-_", validate=True)
-    except (ValueError, base64.binascii.Error) as exc:
+    except (ValueError, binascii.Error) as exc:
         raise ReceiptError("receipt.signature is not valid base64url") from exc
     if len(decoded) != 64:
         raise ReceiptError("receipt.signature must decode to 64 bytes")
