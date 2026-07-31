@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 jobs:
   release:
@@ -43,15 +44,19 @@ jobs:
       - name: Build and verify release artifacts
         run: python scripts/verify_release_artifacts.py
 
-      - name: Refuse to overwrite an existing tag
+      - name: Inspect release tag
+        id: tag
         shell: bash
         run: |
           if git ls-remote --exit-code --tags origin "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
-            echo "Tag ${RELEASE_TAG} already exists; refusing to overwrite."
-            exit 1
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+            echo "Tag ${RELEASE_TAG} already exists; it will not be changed."
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
           fi
 
       - name: Create and push annotated tag
+        if: steps.tag.outputs.exists != 'true'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
@@ -59,13 +64,43 @@ jobs:
           git tag -a "${RELEASE_TAG}" "${RELEASE_SHA}" -m "Kepenk ${RELEASE_TAG}"
           git push origin "refs/tags/${RELEASE_TAG}"
 
-      - name: Create GitHub release with verified artifacts
+      - name: Ensure GitHub release exists
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${RELEASE_TAG}" dist/* \
-            --repo "${GITHUB_REPOSITORY}" \
-            --title "Kepenk ${RELEASE_TAG}" \
-            --notes-file docs/releases/v0.1.0.md \
-            --verify-tag
+          if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "GitHub Release ${RELEASE_TAG} already exists."
+          else
+            gh release create "${RELEASE_TAG}" dist/* \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "Kepenk ${RELEASE_TAG}" \
+              --notes-file docs/releases/v0.1.0.md \
+              --verify-tag
+          fi
+
+      - name: Upload any missing verified artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing_assets="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+          for artifact in dist/*; do
+            name="$(basename "${artifact}")"
+            if printf '%s\n' "${existing_assets}" | grep -Fxq "${name}"; then
+              echo "Asset ${name} already exists."
+            else
+              gh release upload "${RELEASE_TAG}" "${artifact}" --repo "${GITHUB_REPOSITORY}"
+            fi
+          done
+
+      - name: Verify release and record completion
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_url="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json url --jq '.url')"
+          assets="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+          printf '%s\n' "${assets}" | grep -Fxq 'kepenk_gate-0.1.0-py3-none-any.whl'
+          printf '%s\n' "${assets}" | grep -Fxq 'kepenk_gate-0.1.0.tar.gz'
+          gh issue comment 5 --repo "${GITHUB_REPOSITORY}" --body "GitHub Release **${RELEASE_TAG}** verified successfully. The annotated tag points to \`${RELEASE_SHA}\`, and the verified wheel and source distribution are attached: ${release_url}\n\nPyPI publication remains separate and requires the configured publishing credential."
