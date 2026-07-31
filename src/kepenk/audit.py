@@ -65,6 +65,43 @@ def append_decision(path: str | Path, decision: Decision, *, outcome: str) -> di
     return payload
 
 
+def read_verified_audit(path: str | Path) -> tuple[dict[str, Any], ...]:
+    """Read an audit log while verifying every hash link and event hash."""
+    audit_path = Path(path)
+    if not audit_path.exists():
+        raise AuditError("audit file does not exist")
+
+    previous_hash = GENESIS_HASH
+    events: list[dict[str, Any]] = []
+    try:
+        with audit_path.open("r", encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, start=1):
+                if not line.strip():
+                    continue
+                raw_event = json.loads(line)
+                if not isinstance(raw_event, dict):
+                    raise AuditError(f"audit event at line {line_number} must be an object")
+
+                event: dict[str, Any] = dict(raw_event)
+                stored_hash = event.pop("event_hash", None)
+                linked_hash = event.get("previous_hash")
+                if linked_hash != previous_hash:
+                    raise AuditError(f"broken previous_hash at line {line_number}")
+                expected_hash = _hash_event(event, previous_hash)
+                if stored_hash != expected_hash:
+                    raise AuditError(f"invalid event_hash at line {line_number}")
+
+                raw_event["event_hash"] = stored_hash
+                events.append(raw_event)
+                previous_hash = expected_hash
+    except AuditError:
+        raise
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise AuditError(f"cannot read audit log {audit_path}: {exc}") from exc
+
+    return tuple(events)
+
+
 def verify_audit(path: str | Path) -> tuple[bool, int, str | None]:
     audit_path = Path(path)
     if not audit_path.exists():
@@ -77,6 +114,8 @@ def verify_audit(path: str | Path) -> tuple[bool, int, str | None]:
                 if not line.strip():
                     continue
                 event = json.loads(line)
+                if not isinstance(event, dict):
+                    return False, count, f"audit event at line {line_number} must be an object"
                 stored_hash = event.pop("event_hash", None)
                 linked_hash = event.get("previous_hash")
                 if linked_hash != previous_hash:

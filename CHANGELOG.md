@@ -10,11 +10,13 @@ All notable changes will be documented here.
 - public adopter onboarding, evidence registry, case-study outline, and submission template
 - first disclosed founding-team pilot in the public Ustaca AI repository
 - explicit caller-provided `repository` action context and the additive policy v1 `repository_glob` matcher across CLI, JSONL, GitHub Action, MCP, and policy test suites
+- deterministic `kepenk export-sarif` conversion from verified audit chains, with optional approval warnings and stdout or selected-file output
 
 ### Security
 
 - repository context is never inferred from the filesystem or Git configuration and is documented as caller-provided policy data rather than authentication
 - missing repository context does not match `repository_glob` and therefore falls through to later rules or the policy default
+- SARIF export refuses invalid or malformed audit events and omits command text, host, repository context, metadata, timestamps, hashes, and unsafe paths
 
 ## [0.2.1] - 2026-07-31
 
