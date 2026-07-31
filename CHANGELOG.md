@@ -4,7 +4,14 @@ All notable changes will be documented here.
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+### Added
+
+- versioned offline adoption-evidence manifest, local `kepenk validate-adoption` command, JSON Schema, public example, and fail-closed validation tests
+
+### Security
+
+- adoption evidence validation performs no network requests or telemetry, rejects unknown and duplicate fields, requires explicit maintainer consent, and rejects credential-bearing, local, private-network, query-bearing, fragment-bearing, and inconsistent evidence URLs
+- structural validation does not claim repository ownership, maintainer identity, URL availability, production security, or independent adoption; registry inclusion remains subject to human review
 
 ## [0.3.0] - 2026-07-31
 

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "classification": "founding_team_pilot",
+  "repository": "bilgi-ship-it/ustaca-ai",
+  "repository_url": "https://github.com/bilgi-ship-it/ustaca-ai",
+  "maintainer": "bilgi-ship-it",
+  "maintainer_url": "https://github.com/bilgi-ship-it",
+  "maintainer_consent": true,
+  "integration": "github_action",
+  "kepenk_version": "v0.3.0",
+  "evidence_url": "https://github.com/bilgi-ship-it/ustaca-ai/tree/main/.kepenk",
+  "verified_on": "2026-07-31"
+}

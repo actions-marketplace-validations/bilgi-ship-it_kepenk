@@ -6,6 +6,7 @@ import shutil
 import sys
 from pathlib import Path
 
+from .adoption import load_adoption_evidence
 from .audit import append_decision, verify_audit
 from .engine import PolicyEngine
 from .errors import KepenkError
@@ -50,6 +51,21 @@ def _parser() -> argparse.ArgumentParser:
 
     validate = sub.add_parser("validate", help="Validate a policy file and exit")
     validate.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    validate_adoption = sub.add_parser(
+        "validate-adoption",
+        help="Validate an offline public adoption-evidence manifest",
+    )
+    validate_adoption.add_argument(
+        "--evidence",
+        default=".kepenk/adoption.json",
+        help="Evidence JSON path (default: .kepenk/adoption.json)",
+    )
+    validate_adoption.add_argument(
+        "--json",
+        action="store_true",
+        help="Print machine-readable JSON",
+    )
 
     test = sub.add_parser("test", help="Run declarative policy decision tests")
     test.add_argument(
@@ -264,6 +280,19 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.subcommand == "init":
             return _init_policy(policy_path, args.force)
+
+        if args.subcommand == "validate-adoption":
+            evidence = load_adoption_evidence(args.evidence)
+            payload = {"valid": True, **evidence.to_dict()}
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+            else:
+                print(
+                    "valid adoption evidence: "
+                    f"{evidence.classification}, repository={evidence.repository}, "
+                    f"integration={evidence.integration}, kepenk={evidence.kepenk_version}"
+                )
+            return 0
 
         if args.subcommand == "generate-receipt-key":
             key_id = generate_receipt_key_pair(

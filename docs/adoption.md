@@ -64,13 +64,36 @@ Before requesting a registry entry, confirm that:
 
 An integration can be real without being listed. The registry exists only for public, consent-based evidence.
 
+## Create an offline evidence manifest
+
+The v0.4 development line includes an optional version-1 adoption-evidence manifest. It standardizes public integration facts without telemetry or network access.
+
+Copy the [checked-in example](../examples/adoption/ustaca-ai.json) to `.kepenk/adoption.json`, change every field to the adopting repository, and validate it from a reviewed `main` commit or a future tagged release that includes the command:
+
+```bash
+kepenk validate-adoption --evidence .kepenk/adoption.json
+```
+
+Machine-readable validation:
+
+```bash
+kepenk validate-adoption \
+  --evidence .kepenk/adoption.json \
+  --json
+```
+
+The manifest records classification, repository, maintainer consent, integration type, Kepenk version, evidence URL, and verification date. See [the adoption-evidence guide](adoption-evidence.md) and [versioned JSON Schema](../schemas/kepenk-adoption-evidence-v1.schema.json).
+
+A structurally valid manifest does not prove ownership, identity, URL availability, production security, or independent adoption. Registry review remains human and consent based.
+
 ## Submit adoption evidence
 
 1. Fork or branch this repository.
 2. Add one row to the correct table in [`ADOPTERS.md`](../ADOPTERS.md).
-3. Use a permalink to the policy, workflow, hook, adapter, or integration documentation.
+3. Use a permalink to the policy, workflow, hook, adapter, integration documentation, or adoption manifest.
 4. Complete [the adopter pull-request template](../.github/PULL_REQUEST_TEMPLATE/adopter.md).
-5. Optionally add a case study based on [the case-study template](case-study-template.md).
+5. Include the locally validated `.kepenk/adoption.json` permalink when one is available.
+6. Optionally add a case study based on [the case-study template](case-study-template.md).
 
 Founding-team pilots and independent adopters are kept in separate sections. A founding-team repository must never be presented as independent adoption.
 
@@ -82,6 +105,7 @@ A registry pull request is checked for:
 - a working public evidence link;
 - clear integration type;
 - honest classification as independent or founding-team;
+- agreement between any manifest and the linked public repository;
 - absence of unsupported user, download, security, or production claims.
 
 Acceptance into the registry is not a security certification or endorsement. It records only that the linked public repository shows a Kepenk integration at the verification date.
