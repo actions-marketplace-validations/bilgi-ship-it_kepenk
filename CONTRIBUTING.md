@@ -2,6 +2,8 @@
 
 Thank you for helping build a safer layer for agentic developer tooling.
 
+Read [`MAINTAINERS.md`](MAINTAINERS.md) for current first-response targets, triage practice, review expectations, release cadence, and the path toward additional maintainers. These are public working targets rather than guaranteed service levels.
+
 ## Before opening a pull request
 
 1. Open or reference an issue for non-trivial changes.
@@ -20,8 +22,11 @@ pytest
 - Use focused commits.
 - Describe the failure mode or workflow problem addressed.
 - Call out policy-format and machine-facing changes explicitly.
-- Do not include credentials, private logs, or proprietary source.
+- Do not include credentials, private logs, private keys, approval receipts from production, or proprietary source.
 - Keep claims tied to reproducible repository evidence.
+- Update compatibility and migration documentation when a machine-facing contract changes.
+
+A passing CI run is required but does not replace maintainer review. Security-sensitive changes should explain their threat model and negative tests.
 
 ## Adopter registry contributions
 
@@ -40,9 +45,16 @@ A registry entry records visible integration evidence. It is not a certification
 
 ## Good first contributions
 
-- additional policy examples and policy test suites
-- Windows and PowerShell command patterns
-- documentation improvements
-- clearer validation errors
-- onboarding examples for public repositories
-- fuzz and property tests for rule matching
+Open issues carrying the [`good first issue`](https://github.com/bilgi-ship-it/kepenk/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) label are intentionally scoped for an outside contributor.
+
+Suitable contribution areas include:
+
+- additional CI-provider integration examples;
+- policy examples and policy test suites;
+- Windows and PowerShell command patterns;
+- documentation improvements;
+- clearer validation errors;
+- onboarding examples for public repositories;
+- fuzz and property tests for rule matching.
+
+Ask questions in the issue before investing in a large solution. The maintainer will keep acceptance criteria public and avoid reserving an issue indefinitely without visible progress.

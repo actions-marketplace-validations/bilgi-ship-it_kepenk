@@ -53,10 +53,13 @@ Continuous integration covers Ubuntu and Windows with Python 3.11 and 3.13. It r
 
 The project follows a GitHub-first release process. Verified wheel and source distributions are attached to each completed GitHub release. Public package-index publication is a separate maintainer action.
 
+Current maintainer ownership, response targets, review practice, release cadence, and public measurement rules are documented in [`MAINTAINERS.md`](MAINTAINERS.md). These are transparent working targets, not guaranteed service levels.
+
 ## Project links
 
 - [Adoption guide](docs/adoption.md)
 - [Adopter registry](ADOPTERS.md)
+- [Maintainer policy](MAINTAINERS.md)
 - [Roadmap](ROADMAP.md)
 - [Contributing](CONTRIBUTING.md)
 - [Compatibility contract](docs/compatibility-v0.md)
