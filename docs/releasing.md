@@ -4,7 +4,7 @@ Kepenk releases must be reproducible, installable from both wheel and source dis
 
 ## Package name
 
-The provisional PyPI distribution name is `kepenk-gate`. Search-engine results and a `404` response are not proof that a PyPI namespace can be reserved or that the maintainer has publishing permission. Confirm ownership or availability directly in the PyPI account before the first upload. If the name is unavailable, change `[project].name` before tagging and rebuild every artifact.
+The PyPI distribution name is `kepenk-gate`. The maintainer confirmed its availability on 2026-07-31 before finalizing v0.1.0. Reconfirm authenticated ownership or publishing permission immediately before every upload; search results and a public `404` response alone are not proof that publishing will be accepted.
 
 Run the public-state preflight before release work:
 
@@ -15,7 +15,7 @@ python scripts/check_pypi_state.py --repository testpypi --json
 
 The preflight has deliberately limited claims:
 
-- `not_found`: no public project listing was returned; availability remains unconfirmed;
+- `not_found`: no public project listing was returned; availability remains unconfirmed by the script;
 - `exists`: the project exists and publishing ownership must be checked manually;
 - `version_published=true`: the version must not be reused or overwritten;
 - network or malformed-response errors fail explicitly.
@@ -73,4 +73,4 @@ Yanking a release can discourage new installation, but it does not erase artifac
 
 ## Current publishing state
 
-The repository prepares and verifies release artifacts, but it does not publish automatically. This avoids requiring a package token before the PyPI project and trusted-publishing relationship are configured.
+The `kepenk-gate` name has been confirmed by the maintainer. The repository prepares and verifies release artifacts, but it does not publish automatically. Configure PyPI Trusted Publishing or another narrowly scoped credential before uploading.
