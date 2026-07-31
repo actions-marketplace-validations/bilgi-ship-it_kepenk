@@ -5,12 +5,14 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import venv
 from collections.abc import Sequence
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"
+DISTRIBUTION_NAME = "kepenk-gate"
 
 
 def _run(
@@ -31,6 +33,20 @@ def _environment_python(environment: Path) -> Path:
     return environment / "bin" / "python"
 
 
+def _environment_command(environment: Path, name: str) -> Path:
+    if os.name == "nt":
+        return environment / "Scripts" / f"{name}.exe"
+    return environment / "bin" / name
+
+
+def _expected_version() -> str:
+    payload = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    version = payload.get("project", {}).get("version")
+    if not isinstance(version, str) or not version:
+        raise RuntimeError("pyproject.toml must define a non-empty project.version")
+    return version
+
+
 def _artifacts() -> tuple[Path, Path]:
     wheels = sorted(DIST.glob("*.whl"))
     source_distributions = sorted(DIST.glob("*.tar.gz"))
@@ -42,7 +58,7 @@ def _artifacts() -> tuple[Path, Path]:
     return wheels[0], source_distributions[0]
 
 
-def _verify_install(artifact: Path) -> None:
+def _verify_install(artifact: Path, expected_version: str) -> None:
     with tempfile.TemporaryDirectory(prefix="kepenk-release-") as temporary:
         temporary_path = Path(temporary)
         environment = temporary_path / "venv"
@@ -50,6 +66,9 @@ def _verify_install(artifact: Path) -> None:
         workspace.mkdir()
         venv.EnvBuilder(with_pip=True, clear=True).create(environment)
         python = _environment_python(environment)
+        kepenk = _environment_command(environment, "kepenk")
+        pre_commit = _environment_command(environment, "kepenk-pre-commit")
+        mcp = _environment_command(environment, "kepenk-mcp")
 
         _run(
             [
@@ -61,13 +80,23 @@ def _verify_install(artifact: Path) -> None:
                 artifact,
             ]
         )
-        _run([python, "-m", "kepenk", "--help"])
-        _run([python, "-m", "kepenk", "--policy", "kepenk.yaml", "init"], cwd=workspace)
         _run(
             [
                 python,
-                "-m",
-                "kepenk",
+                "-c",
+                (
+                    "from importlib.metadata import version; "
+                    f"assert version({DISTRIBUTION_NAME!r}) == {expected_version!r}"
+                ),
+            ]
+        )
+        _run([kepenk, "--help"])
+        _run([pre_commit, "--help"])
+        _run([mcp, "--help"])
+        _run([kepenk, "--policy", "kepenk.yaml", "init"], cwd=workspace)
+        _run(
+            [
+                kepenk,
                 "--policy",
                 "kepenk.yaml",
                 "check",
@@ -82,13 +111,17 @@ def _verify_install(artifact: Path) -> None:
 
 
 def main() -> int:
+    expected_version = _expected_version()
     shutil.rmtree(DIST, ignore_errors=True)
     _run([sys.executable, "-m", "build"])
     wheel, source_distribution = _artifacts()
     _run([sys.executable, "-m", "twine", "check", wheel, source_distribution])
-    _verify_install(wheel)
-    _verify_install(source_distribution)
-    print(f"verified release artifacts: {wheel.name}, {source_distribution.name}")
+    _verify_install(wheel, expected_version)
+    _verify_install(source_distribution, expected_version)
+    print(
+        f"verified release artifacts for {DISTRIBUTION_NAME}=={expected_version}: "
+        f"{wheel.name}, {source_distribution.name}"
+    )
     return 0
 
 

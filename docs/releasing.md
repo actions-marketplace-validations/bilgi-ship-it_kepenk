@@ -6,9 +6,9 @@ Every v0.x release must also be checked against the [v0.x integration compatibil
 
 ## Package name
 
-The PyPI distribution name is `kepenk-gate`. The maintainer confirmed its availability on 2026-07-31 before finalizing v0.1.0. Reconfirm authenticated ownership or publishing permission immediately before every upload; search results and a public `404` response alone are not proof that publishing will be accepted.
+The distribution name is `kepenk-gate`. Reconfirm authenticated ownership or publishing permission immediately before every PyPI upload; search results and a public `404` response alone are not proof that publishing will be accepted.
 
-Run the public-state preflight before release work:
+Run the public-state preflight before PyPI work:
 
 ```bash
 python scripts/check_pypi_state.py
@@ -39,65 +39,68 @@ On Windows PowerShell, activate with `.\.venv\Scripts\Activate.ps1`.
 
 The artifact script:
 
-1. builds one wheel and one source distribution;
-2. runs `twine check` on both;
-3. creates separate clean virtual environments;
-4. installs each artifact independently;
-5. verifies the CLI, starter policy creation, and a policy decision.
+1. reads the exact package version from `pyproject.toml`;
+2. builds one wheel and one source distribution;
+3. runs `twine check` on both;
+4. creates separate clean virtual environments;
+5. installs each artifact independently;
+6. verifies installed `kepenk-gate` metadata matches the release version;
+7. smoke-tests `kepenk`, `kepenk-pre-commit`, and `kepenk-mcp`;
+8. creates a starter policy and evaluates a representative action.
 
-The same check runs in the CI `package` job. The normal test matrix also runs `tests/test_compatibility_contract.py`, which protects the declared policy, CLI, JSONL, GitHub Action, pre-commit, and MCP integration surfaces.
+The same check runs in the CI `package` job. The normal test matrix also runs compatibility, MCP, protocol, policy-pack, pre-commit, and safety-demo tests.
+
+## Two-stage GitHub Release
+
+A release tag must point to the exact commit whose package metadata, changelog, README, and release notes were verified. Kepenk therefore uses two stages:
+
+1. merge a release-preparation PR containing the version bump, changelog, release notes, and verification changes;
+2. record the resulting immutable merge SHA;
+3. add a dedicated `release-vX.Y.Z.yml` workflow on a later main commit, pinned to that release SHA;
+4. let the workflow check out the pinned SHA, rerun quality and artifact verification, create the annotated tag, create the GitHub Release, upload the wheel and source distribution, verify asset names, and close the release issue.
+
+The release workflow commit itself is intentionally not the tag target. This prevents a workflow-only change from altering the verified source release.
 
 ## PyPI Trusted Publisher setup
 
-The production workflow is `.github/workflows/publish-pypi.yml`. It uses GitHub OIDC and does not require a stored PyPI API token.
+PyPI publication is separate from the GitHub Release and must remain an explicit maintainer action. The existing `.github/workflows/publish-pypi.yml` is pinned to the immutable v0.1.0 release and must not be repurposed silently for a different version.
 
-For a new PyPI project, create a pending GitHub publisher from the PyPI account **Publishing** page with these exact values:
+For a future version-specific PyPI workflow, configure or reconfirm a pending GitHub publisher from the PyPI account **Publishing** page with these values:
 
 - PyPI project name: `kepenk-gate`
 - GitHub owner: `bilgi-ship-it`
 - GitHub repository: `kepenk`
-- Workflow filename: `publish-pypi.yml`
-- Environment name: `pypi`
+- exact workflow filename for that version
+- environment name: `pypi`
 
-If the PyPI project already exists, add the same publisher from the project's **Publishing** page instead.
+The publishing workflow must:
 
-After the publisher is configured:
-
-1. Open the repository's **Actions** page.
-2. Select **Publish to PyPI**.
-3. Choose **Run workflow** on the `main` branch.
-4. Enter the exact confirmation `PUBLISH-v0.1.0`.
-5. Run the workflow once.
-
-The workflow:
-
-1. rejects any other confirmation text;
-2. checks out the immutable `v0.1.0` tag and verifies its exact commit SHA;
-3. refuses to publish when `0.1.0` already exists on public PyPI;
-4. reruns lint, strict typing, tests, package builds, metadata checks, clean installs, and CLI smoke tests;
-5. passes immutable artifacts to a separate publishing job;
-6. grants `id-token: write` only to that publishing job;
-7. installs `kepenk-gate==0.1.0` from public PyPI after upload;
-8. closes release issue #5 only after the public installation and CLI smoke tests succeed.
+1. require exact version-specific confirmation text;
+2. check out an immutable tag and verify its exact commit SHA;
+3. refuse an already-published version;
+4. rerun lint, strict typing, tests, artifact builds, metadata checks, clean installs, and CLI smoke tests;
+5. pass immutable artifacts to a separate publishing job;
+6. grant `id-token: write` only to that publishing job;
+7. verify installation from public PyPI after upload;
+8. close a PyPI-specific issue only after public installation succeeds.
 
 ## Release checklist
 
-1. Confirm the PyPI distribution name and project ownership.
-2. Review every changed machine-facing surface against `docs/compatibility-v0.md`.
-3. For a deprecation or breaking change, update `CHANGELOG.md`, release notes, migration guidance, and compatibility regression tests.
-4. Configure or reconfirm the PyPI Trusted Publisher using the exact release workflow values.
-5. Ensure all CI jobs are green on the exact release commit.
-6. Run the public-state preflight against PyPI and TestPyPI.
-7. Update `CHANGELOG.md` with the actual release date and final contents.
-8. Run the automated artifact check from a clean checkout.
-9. Create and push an annotated version tag from the verified commit.
-10. Create a GitHub release from that tag using the matching file under `docs/releases/`.
-11. Run the guarded PyPI workflow only when publishing is intended and authorized.
-12. Confirm installation from the selected public distribution channel and run CLI smoke tests.
+1. Review every changed machine-facing surface against `docs/compatibility-v0.md`.
+2. For a deprecation or breaking change, update `CHANGELOG.md`, release notes, migration guidance, and compatibility regression tests.
+3. Set the exact version in `pyproject.toml`.
+4. Update `CHANGELOG.md`, README release links, and `docs/releases/vX.Y.Z.md`.
+5. Ensure all CI jobs are green on the exact release-preparation commit.
+6. Run the automated artifact check from a clean checkout.
+7. Merge the release-preparation PR and record its immutable SHA.
+8. Add a dedicated release workflow pinned to that SHA.
+9. Verify the workflow creates the annotated tag and GitHub Release with exactly one wheel and one source distribution.
+10. Install an attached artifact in a clean environment and rerun CLI smoke tests.
+11. Run a guarded PyPI workflow only when publishing is separately intended, configured, and authorized.
 
 ## Rollback limitations
 
-PyPI artifacts are immutable in normal release practice and an existing version must not be overwritten. If a release is incomplete or faulty:
+Published package artifacts are immutable in normal release practice and an existing version must not be overwritten. If a release is incomplete or faulty:
 
 1. stop further uploads for that version;
 2. document the failure;
@@ -106,8 +109,8 @@ PyPI artifacts are immutable in normal release practice and an existing version 
 5. rebuild and verify new artifacts;
 6. publish a new release.
 
-Yanking a release can discourage new installation, but it does not erase artifacts already downloaded or used. Never treat yanking as a full rollback.
+Yanking a PyPI release can discourage new installation, but it does not erase artifacts already downloaded or used. Never treat yanking as a full rollback.
 
 ## Current publishing state
 
-The annotated `v0.1.0` tag and GitHub Release are complete, and the verified wheel and source distribution are attached. The guarded PyPI Trusted Publishing workflow is prepared. PyPI publication requires the publisher configuration above and one explicit manual workflow run.
+The annotated `v0.1.0` tag and GitHub Release are complete. The v0.2.0 GitHub release is tracked in issue #33 and uses the same pinned-SHA release method. Public PyPI publication remains separate and optional.

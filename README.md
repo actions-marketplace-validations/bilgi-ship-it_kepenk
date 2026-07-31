@@ -10,7 +10,7 @@ Kepenk sits between an agent and a side-effecting action. It evaluates a local Y
 
 The project is provider-neutral, local-first, and designed for coding agents, CLI automations, CI jobs, and maintainer workflows.
 
-> Status: early alpha. The current public release is [`v0.1.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). The project remains pre-1.0; machine-facing guarantees are limited to the documented [v0.x compatibility contract](docs/compatibility-v0.md).
+> Status: early alpha. The current public release is [`v0.2.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.2.0). The project remains pre-1.0; machine-facing guarantees are limited to the documented [v0.x compatibility contract](docs/compatibility-v0.md).
 
 ## Why Kepenk?
 
@@ -25,7 +25,7 @@ Kepenk can be installed directly from the verified GitHub release tag; PyPI is n
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.1.0.zip"
+python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.0.zip"
 
 kepenk --help
 kepenk init
@@ -81,10 +81,11 @@ The script is part of the Ubuntu and Windows CI matrix. The publishing demo has 
 
 ## MCP policy gate
 
-Install the optional MCP integration and run a local `stdio` server:
+Install the optional MCP integration from the verified tag and run a local `stdio` server:
 
 ```bash
-python -m pip install "kepenk-gate[mcp]"
+python -m pip install \
+  "kepenk-gate[mcp] @ https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.0.zip"
 kepenk-mcp --policy /absolute/path/to/kepenk.yaml
 ```
 
@@ -193,7 +194,7 @@ Exit codes:
 - [v0.x compatibility contract](docs/compatibility-v0.md): machine-facing stability, deprecation, and migration rules before v1.0.
 - [PowerShell examples](docs/powershell.md): Windows-specific quoting, command matching, and policy limitations.
 
-## Current v0.2 priorities
+## v0.2 release scope
 
 - [x] [Structured stdin/stdout protocol](https://github.com/bilgi-ship-it/kepenk/issues/18)
 - [x] [Real-world policy packs](https://github.com/bilgi-ship-it/kepenk/issues/19)
@@ -206,7 +207,7 @@ See [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ## Releasing
 
-The verified wheel and source distribution are attached to the [`v0.1.0` GitHub Release](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). See [docs/releasing.md](docs/releasing.md) for the reproducible build, compatibility review, and clean-install process. Public PyPI publication is optional and currently deferred.
+The verified wheel and source distribution are attached to the [`v0.2.0` GitHub Release](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.2.0). See [docs/releasing.md](docs/releasing.md) for the reproducible build, compatibility review, and clean-install process. Public PyPI publication is optional and remains a separate explicit maintainer action.
 
 ## Security
 

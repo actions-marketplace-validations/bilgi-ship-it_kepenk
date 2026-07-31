@@ -28,6 +28,7 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 - [x] pre-commit integration ([#21](https://github.com/bilgi-ship-it/kepenk/issues/21))
 - [x] MCP policy-gate adapter ([#29](https://github.com/bilgi-ship-it/kepenk/issues/29))
 - [x] documented compatibility contract for integrations ([#30](https://github.com/bilgi-ship-it/kepenk/issues/30))
+- [x] tagged `v0.2.0` GitHub Release with verified wheel and source distribution ([#33](https://github.com/bilgi-ship-it/kepenk/issues/33))
 
 ## v0.3 — Maintainer workflows
 

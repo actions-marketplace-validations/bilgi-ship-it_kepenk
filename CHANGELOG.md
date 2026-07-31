@@ -2,6 +2,33 @@
 
 All notable changes will be documented here.
 
+## [0.2.0] - 2026-07-31
+
+### Added
+
+- versioned JSONL stdin/stdout protocol for long-running agent integrations
+- ten reviewed policy packs covering Python, Git, Docker, npm, PyPI, Terraform, database migrations, filesystem cleanup, read-only repository inspection, and CI/CD releases
+- representative allow, approval, and deny tests for every policy pack
+- three reproducible safety demonstrations for test execution, Git push approval, destructive deletion, audit verification, and CI publishing gates
+- managed pre-commit hook with multi-file validation and fail-closed diagnostics
+- optional local MCP stdio adapter with the `kepenk_check_action` tool
+- MCP client integration tests covering tool discovery, decisions, invalid input, and audit logging
+- v0.x compatibility contract for policy, CLI, JSONL, GitHub Action, pre-commit, and MCP integration surfaces
+- compatibility regression tests for every declared stable machine-facing surface
+
+### Changed
+
+- CI now validates policy examples and runs safety demos, pre-commit checks, MCP smoke tests, and compatibility tests on Ubuntu and Windows with Python 3.11 and 3.13
+- release verification now covers all public command entry points and installed package metadata
+- README, roadmap, and release instructions now describe integration stability and deprecation rules
+
+### Security
+
+- all protocol, MCP, policy-validation, and audit failures remain fail closed
+- MCP integration is decision-only and never executes the proposed action
+- CI demonstration proves an approval decision prevents the simulated package-publishing step
+- compatibility rules prevent silent removal or incompatible mutation of stable security-relevant fields and exit codes
+
 ## [0.1.0] - 2026-07-31
 
 ### Added
