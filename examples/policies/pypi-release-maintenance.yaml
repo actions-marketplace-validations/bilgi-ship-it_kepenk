@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-pypi-release-maintenance.jsonl
+
+rules:
+  - id: deny-insecure-package-upload
+    effect: deny
+    reason: Publishing packages over plain HTTP can expose credentials and artifacts.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:twine\s+upload|python(?:3(?:\.\d+)?)?\s+-m\s+twine\s+upload)\b[^\n]*--repository-url\s+http://'
+
+  - id: deny-tls-bypass-install
+    effect: deny
+    reason: Trusted-host installation bypasses normal TLS hostname verification.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:pip(?:3)?|python(?:3(?:\.\d+)?)?\s+-m\s+pip)\s+install\b[^\n]*--trusted-host(?:\s|$)'
+
+  - id: require-approval-for-package-upload
+    effect: approval
+    reason: Uploading a package creates immutable shared release artifacts.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)(?:twine\s+upload|python(?:3(?:\.\d+)?)?\s+-m\s+twine\s+upload)(?:\s|$)'
+        - '(^|\s)uv\s+publish(?:\s|$)'
+
+  - id: require-approval-for-install-or-uninstall
+    effect: approval
+    reason: Installing or removing packages changes the environment and may execute third-party hooks.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:pip(?:3)?|python(?:3(?:\.\d+)?)?\s+-m\s+pip)\s+(?:install|uninstall)(?:\s|$)'
+
+  - id: allow-release-artifact-build
+    effect: allow
+    reason: Building local release artifacts does not publish them.
+    match:
+      action: shell
+      command_regex: '(^|\s)python(?:3(?:\.\d+)?)?\s+-m\s+build(?:\s|$)'
+
+  - id: allow-release-artifact-check
+    effect: allow
+    reason: Twine check validates local package metadata without uploading.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:twine\s+check|python(?:3(?:\.\d+)?)?\s+-m\s+twine\s+check)(?:\s|$)'
+
+  - id: allow-public-index-inspection
+    effect: allow
+    reason: Public package-index inspection is read-only.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)(?:pip(?:3)?|python(?:3(?:\.\d+)?)?\s+-m\s+pip)\s+index\s+versions(?:\s|$)'
+        - '(^|\s)python(?:3(?:\.\d+)?)?\s+scripts/check_pypi_state\.py(?:\s|$)'

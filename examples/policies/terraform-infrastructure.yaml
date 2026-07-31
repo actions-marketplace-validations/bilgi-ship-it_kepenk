@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-terraform-infrastructure.jsonl
+
+rules:
+  - id: deny-destroy
+    effect: deny
+    reason: Terraform destroy can remove production infrastructure and data-bearing resources.
+    match:
+      action: shell
+      command_regex: '(^|\s)terraform\s+destroy(?:\s|$)'
+
+  - id: deny-auto-approved-apply
+    effect: deny
+    reason: Auto-approved apply bypasses the human review boundary.
+    match:
+      action: shell
+      command_regex: '(^|\s)terraform\s+apply\b[^\n]*-auto-approve(?:\s|$)'
+
+  - id: deny-state-removal
+    effect: deny
+    reason: Removing resources from Terraform state can orphan live infrastructure.
+    match:
+      action: shell
+      command_regex: '(^|\s)terraform\s+state\s+rm(?:\s|$)'
+
+  - id: require-approval-for-apply
+    effect: approval
+    reason: Terraform apply changes remote infrastructure and shared state.
+    match:
+      action: shell
+      command_regex: '(^|\s)terraform\s+apply(?:\s|$)'
+
+  - id: require-approval-for-plan-or-init
+    effect: approval
+    reason: Terraform plan and init may access remote providers, backends, credentials, and data sources.
+    match:
+      action: shell
+      command_regex: '(^|\s)terraform\s+(?:plan|init)(?:\s|$)'
+
+  - id: require-approval-for-state-or-workspace-change
+    effect: approval
+    reason: State, import, and workspace mutations change Terraform's control data.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)terraform\s+(?:import|taint|untaint)(?:\s|$)'
+        - '(^|\s)terraform\s+state\s+(?:mv|push|replace-provider)(?:\s|$)'
+        - '(^|\s)terraform\s+workspace\s+(?:new|delete|select)(?:\s|$)'
+
+  - id: allow-static-terraform-checks
+    effect: allow
+    reason: Formatting and configuration validation are local static checks.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)terraform\s+fmt\s+-check(?:\s|$)'
+        - '(^|\s)terraform\s+validate(?:\s|$)'
+
+  - id: allow-read-only-terraform-inspection
+    effect: allow
+    reason: These commands inspect local configuration or existing plan output without changing infrastructure.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)terraform\s+(?:version|providers|show|output)(?:\s|$)'
+        - '(^|\s)terraform\s+workspace\s+(?:list|show)(?:\s|$)'

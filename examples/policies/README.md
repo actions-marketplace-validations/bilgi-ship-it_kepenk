@@ -7,6 +7,9 @@ These examples are conservative starting points for common coding-agent and main
 | [`python-development.yaml`](python-development.yaml) | tests, lint, type checks, local builds | dependency installation, package upload | recursive deletion of root-like paths |
 | [`git-maintenance.yaml`](git-maintenance.yaml) | status, diff, log, show and other read-only inspection | push and history-changing operations | force-push, hard reset, aggressive clean |
 | [`docker-maintenance.yaml`](docker-maintenance.yaml) | version, state and configuration inspection | builds, runs, registry operations | system prune, volume deletion, forced removal |
+| [`npm-package-maintenance.yaml`](npm-package-maintenance.yaml) | tests, static checks, registry inspection | install, publish, version and dist-tag changes | unpublish and owner removal |
+| [`pypi-release-maintenance.yaml`](pypi-release-maintenance.yaml) | local build, metadata checks, public index inspection | package upload and environment changes | insecure upload and TLS-bypass installation |
+| [`terraform-infrastructure.yaml`](terraform-infrastructure.yaml) | format, validate and read-only inspection | plan, init, apply and state changes | destroy, auto-approved apply and state removal |
 
 ## Use a pack
 
@@ -27,7 +30,7 @@ Policy packs are examples, not universal security policies. Command strings can 
 
 ```bash
 python scripts/validate_policy_examples.py
-pytest tests/test_policy_packs.py
+pytest tests/test_policy_packs.py tests/test_policy_packs_batch2.py
 ```
 
 CI runs both structural validation and representative decision tests for every committed pack.

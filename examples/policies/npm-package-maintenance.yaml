@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-npm-package-maintenance.jsonl
+
+rules:
+  - id: deny-package-unpublish
+    effect: deny
+    reason: Unpublishing a package can break downstream users and shared builds.
+    match:
+      action: shell
+      command_regex: '(^|\s)npm\s+unpublish(?:\s|$)'
+
+  - id: deny-owner-removal
+    effect: deny
+    reason: Removing a package owner can revoke maintainer access and disrupt recovery.
+    match:
+      action: shell
+      command_regex: '(^|\s)npm\s+owner\s+rm(?:\s|$)'
+
+  - id: require-approval-for-publish
+    effect: approval
+    reason: Publishing, versioning, and dist-tag changes modify shared package state.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)npm\s+publish(?:\s|$)'
+        - '(^|\s)npm\s+version(?:\s|$)'
+        - '(^|\s)npm\s+dist-tag\s+(?:add|rm)(?:\s|$)'
+
+  - id: require-approval-for-dependency-install
+    effect: approval
+    reason: npm installation can execute lifecycle scripts from third-party packages.
+    match:
+      action: shell
+      command_regex: '(^|\s)npm\s+(?:install|i|ci|update)(?:\s|$)'
+
+  - id: allow-package-tests
+    effect: allow
+    reason: Project-defined tests and static checks are expected local development actions.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)npm\s+(?:test|t)(?:\s|$)'
+        - '(^|\s)npm\s+run\s+(?:lint|typecheck|check|test)(?:\s|$)'
+
+  - id: allow-read-only-package-inspection
+    effect: allow
+    reason: Package metadata inspection does not modify local or registry state.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)npm\s+(?:view|info|show|outdated)(?:\s|$)'
+        - '(^|\s)npm\s+pack\s+--dry-run(?:\s|$)'
