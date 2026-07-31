@@ -10,7 +10,7 @@ Kepenk sits between an agent and a side-effecting action. It evaluates a local Y
 
 The project is provider-neutral, local-first, and designed for coding agents, CLI automations, CI jobs, and maintainer workflows.
 
-> Status: early alpha. The current public release is [`v0.1.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). The policy format may evolve before v1.0.
+> Status: early alpha. The current public release is [`v0.1.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). The project remains pre-1.0; machine-facing guarantees are limited to the documented [v0.x compatibility contract](docs/compatibility-v0.md).
 
 ## Why Kepenk?
 
@@ -91,6 +91,12 @@ kepenk-mcp --policy /absolute/path/to/kepenk.yaml
 The server exposes one tool, `kepenk_check_action`. It accepts a structured action, returns the complete `allow`, `approval`, or `deny` decision envelope, and writes the decision to the configured audit chain. It never executes the proposed command or tool call.
 
 See the [MCP integration guide](docs/integrations/mcp.md) for host configuration, result handling, and fail-closed enforcement requirements.
+
+## v0.x compatibility
+
+The [v0.x integration compatibility contract](docs/compatibility-v0.md) separates stable, experimental, and internal surfaces. Policy v1, documented CLI and JSONL contracts, the GitHub Action, and the pre-commit hook receive explicit regression protection. The MCP adapter is documented as experimental during v0.2.x rather than being presented as a v1.0-level guarantee.
+
+Normal incompatible changes to a stable surface require public deprecation, release notes, migration guidance, and an overlap period when technically and securely practical. Security fixes may tighten behavior immediately and must explain the required user action.
 
 ## Development installation
 
@@ -184,6 +190,7 @@ Exit codes:
 - [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
 - [pre-commit hook](docs/integrations/pre-commit.md): reject invalid policy files before a commit reaches CI.
 - [MCP policy gate](docs/integrations/mcp.md): expose deterministic decisions through one local read-only MCP tool.
+- [v0.x compatibility contract](docs/compatibility-v0.md): machine-facing stability, deprecation, and migration rules before v1.0.
 - [PowerShell examples](docs/powershell.md): Windows-specific quoting, command matching, and policy limitations.
 
 ## Current v0.2 priorities
@@ -193,13 +200,13 @@ Exit codes:
 - [x] [Reproducible agent-safety demos](https://github.com/bilgi-ship-it/kepenk/issues/20)
 - [x] [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
 - [x] [MCP policy-gate adapter](https://github.com/bilgi-ship-it/kepenk/issues/29)
-- [ ] [v0.x integration compatibility contract](https://github.com/bilgi-ship-it/kepenk/issues/30)
+- [x] [v0.x integration compatibility contract](https://github.com/bilgi-ship-it/kepenk/issues/30)
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ## Releasing
 
-The verified wheel and source distribution are attached to the [`v0.1.0` GitHub Release](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). See [docs/releasing.md](docs/releasing.md) for the reproducible build and clean-install process. Public PyPI publication is optional and currently deferred.
+The verified wheel and source distribution are attached to the [`v0.1.0` GitHub Release](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). See [docs/releasing.md](docs/releasing.md) for the reproducible build, compatibility review, and clean-install process. Public PyPI publication is optional and currently deferred.
 
 ## Security
 

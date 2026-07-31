@@ -1,0 +1,163 @@
+# Kepenk v0.x integration compatibility contract
+
+**Contract version: 1 — applies to Kepenk releases from v0.2.0 until v1.0.0.**
+
+Kepenk is still pre-1.0. This document defines the narrower machine-facing surfaces that integrations may rely on during the v0.x series. It does not promise that every Python function, message, file layout, or implementation detail will remain unchanged.
+
+## Compatibility levels
+
+### Stable within v0.x
+
+A stable surface will not be removed or changed incompatibly in a patch release. An incompatible change requires one of:
+
+1. a new explicit format or protocol version while the old version remains supported for a migration window;
+2. a documented deprecation in release notes followed by removal in a later minor release;
+3. an immediate security fix when preserving the old behavior would keep users exposed.
+
+Additive changes are allowed when existing consumers continue to work. Examples include a new optional field, a new CLI subcommand, or a new policy matcher.
+
+### Experimental
+
+Experimental surfaces are usable and tested, but may change in a minor v0.x release. Changes must still be documented with migration guidance. Patch releases should remain backwards compatible unless a security or correctness issue requires otherwise.
+
+### Internal
+
+Anything not named in this document is internal. Internal Python modules, helper functions, dataclass implementation details, log wording, Markdown summaries, test fixtures, and repository layout may change without a deprecation period.
+
+## Stable surfaces
+
+### Policy format version 1
+
+The following are stable:
+
+- top-level `version: 1`;
+- effects `allow`, `approval`, and `deny`;
+- top-level fields `default`, `audit`, and `rules`;
+- rule fields `id`, `effect`, `reason`, and `match`;
+- match keys `action`, `command_regex`, `command_contains`, `path_glob`, `host_glob`, and `metadata`;
+- first matching rule wins;
+- the default effect is `approval` when omitted;
+- malformed or unsupported policies fail closed.
+
+New optional keys or matchers may be added. A breaking policy-format change requires a new integer version and a migration document. The versioned JSON Schema remains at `schemas/kepenk-policy-v1.schema.json`.
+
+### CLI commands and exit codes
+
+The installed command remains `kepenk`. The following subcommands and machine-relevant options are stable:
+
+- `init [--force]`;
+- `validate [--json]`;
+- `check --action TYPE [--command TEXT] [--path PATH] [--host HOST] [--metadata KEY=VALUE] [--json]`;
+- `run [--yes] -- COMMAND ...`;
+- `protocol`;
+- `verify-audit [--audit PATH]`.
+
+The documented exit codes are stable:
+
+- `0`: success or allowed action;
+- `64`: usage, configuration, validation, protocol, or startup error;
+- `75`: explicit approval is required but was not granted;
+- `77`: denied by policy;
+- for `kepenk run`, another positive value may be the executed child process exit code.
+
+For `check --json`, the stable decision keys are `effect`, `reason`, `rule_id`, and `action`. The action keys are `type`, `command`, `path`, `host`, and `metadata`. Human-readable wording is not stable.
+
+### JSONL protocol version 1
+
+Each non-empty input line is one JSON object containing:
+
+- `version`, currently integer `1`;
+- optional `id`, which may be a string, integer, or null;
+- `action`, with `type` plus optional `command`, `path`, `host`, and `metadata`.
+
+Successful output contains exactly the required envelope fields `version`, `id`, `ok`, and `decision`. The decision uses the stable CLI decision shape.
+
+Error output contains `version`, `id`, `ok`, and `error`; `error` contains `code` and `message`. These error codes are stable:
+
+- `invalid_json`;
+- `invalid_request`;
+- `evaluation_error`.
+
+The protocol is newline-delimited, emits one response for each non-empty request line, flushes each response, and returns exit code `64` if any request failed. New optional fields may be added. A breaking envelope change requires a new protocol version.
+
+### GitHub Action
+
+The reusable action remains available through the repository root `action.yml`.
+
+Stable inputs:
+
+- `mode`;
+- `policy`;
+- `action_type`;
+- `command`;
+- `path`;
+- `host`;
+- `metadata_json`.
+
+Stable outputs:
+
+- `valid`;
+- `effect`;
+- `rule_id`;
+- `reason`;
+- `rule_count`.
+
+`mode` continues to accept `validate` and `check`. Decision exit codes remain `0`, `64`, `75`, and `77` with the same meanings as the CLI. Job-summary formatting and internal step names are internal.
+
+### pre-commit hook
+
+The published hook keeps:
+
+- hook ID `kepenk-validate`;
+- entry point `kepenk-pre-commit`;
+- managed `language: python` execution;
+- one or more filenames passed as positional arguments;
+- exit code `0` only when every supplied policy is valid;
+- non-zero failure when a policy is missing, malformed, or unsupported.
+
+The default filename regular expression may be extended. Repositories using unusual names should continue to set their own `files` expression.
+
+## Experimental surface
+
+### MCP adapter
+
+The local command `kepenk-mcp` and tool name `kepenk_check_action` are experimental during v0.2.x.
+
+The adapter currently:
+
+- runs over local MCP stdio;
+- accepts `type`, `command`, `path`, `host`, and `metadata`;
+- returns the JSONL decision or structured error envelope;
+- records valid decisions in the configured audit chain;
+- never executes the proposed action.
+
+The tool name, core input field names, and fail-closed meaning will not change in a patch release. MCP SDK-specific representation details may change in a minor release with migration notes. The calling MCP host remains responsible for enforcing `allow`, `approval`, `deny`, transport failures, and structured errors.
+
+## Deprecation and migration policy
+
+For a normal incompatible change to a stable surface:
+
+1. open a public issue describing the reason and proposed replacement;
+2. document the deprecation in `CHANGELOG.md` and release notes;
+3. keep the old surface working for at least one subsequent minor v0.x release when technically and securely practical;
+4. provide a migration example;
+5. protect both the old and replacement behavior with tests during the overlap.
+
+A severe security problem may require immediate removal or stricter fail-closed behavior. Such a release must state the security reason, affected versions, and required user action.
+
+## What is not guaranteed
+
+This contract does not stabilize:
+
+- direct imports of names beginning with `_`;
+- undocumented Python APIs;
+- exact exception text, human-readable console wording, or Markdown job summaries;
+- ordering of JSON object keys;
+- timestamps and hashes in audit entries;
+- internal file locations outside documented integration files;
+- third-party SDK APIs or runner behavior;
+- v1.0 behavior beyond the explicit migration promises above.
+
+## Regression protection
+
+`tests/test_compatibility_contract.py` locks the declared machine-facing names, fields, versions, and exit codes. A contributor changing one of these assertions must also update this document, release notes, and migration guidance rather than silently weakening compatibility.

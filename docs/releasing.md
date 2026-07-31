@@ -2,6 +2,8 @@
 
 Kepenk releases must be reproducible, installable from both wheel and source distribution, and reviewed before publishing.
 
+Every v0.x release must also be checked against the [v0.x integration compatibility contract](compatibility-v0.md). A change to a declared stable surface requires updated regression tests, release notes, and migration guidance; it must not be hidden inside an ordinary patch release.
+
 ## Package name
 
 The PyPI distribution name is `kepenk-gate`. The maintainer confirmed its availability on 2026-07-31 before finalizing v0.1.0. Reconfirm authenticated ownership or publishing permission immediately before every upload; search results and a public `404` response alone are not proof that publishing will be accepted.
@@ -43,7 +45,7 @@ The artifact script:
 4. installs each artifact independently;
 5. verifies the CLI, starter policy creation, and a policy decision.
 
-The same check runs in the CI `package` job.
+The same check runs in the CI `package` job. The normal test matrix also runs `tests/test_compatibility_contract.py`, which protects the declared policy, CLI, JSONL, GitHub Action, pre-commit, and MCP integration surfaces.
 
 ## PyPI Trusted Publisher setup
 
@@ -78,18 +80,20 @@ The workflow:
 7. installs `kepenk-gate==0.1.0` from public PyPI after upload;
 8. closes release issue #5 only after the public installation and CLI smoke tests succeed.
 
-## First release checklist
+## Release checklist
 
 1. Confirm the PyPI distribution name and project ownership.
-2. Configure the PyPI Trusted Publisher using the exact values above.
-3. Ensure all CI jobs are green on the exact release commit.
-4. Run the public-state preflight against PyPI and TestPyPI.
-5. Update `CHANGELOG.md` with the actual release date and final contents.
-6. Run the automated artifact check from a clean checkout.
-7. Create and push annotated tag `v0.1.0` from the verified commit.
-8. Create a GitHub release from the tag using `docs/releases/v0.1.0.md`.
-9. Run **Publish to PyPI** with the exact confirmation.
-10. Confirm that the workflow verifies installation from public PyPI and closes issue #5.
+2. Review every changed machine-facing surface against `docs/compatibility-v0.md`.
+3. For a deprecation or breaking change, update `CHANGELOG.md`, release notes, migration guidance, and compatibility regression tests.
+4. Configure or reconfirm the PyPI Trusted Publisher using the exact release workflow values.
+5. Ensure all CI jobs are green on the exact release commit.
+6. Run the public-state preflight against PyPI and TestPyPI.
+7. Update `CHANGELOG.md` with the actual release date and final contents.
+8. Run the automated artifact check from a clean checkout.
+9. Create and push an annotated version tag from the verified commit.
+10. Create a GitHub release from that tag using the matching file under `docs/releases/`.
+11. Run the guarded PyPI workflow only when publishing is intended and authorized.
+12. Confirm installation from the selected public distribution channel and run CLI smoke tests.
 
 ## Rollback limitations
 
