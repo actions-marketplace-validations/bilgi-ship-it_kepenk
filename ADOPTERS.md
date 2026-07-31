@@ -17,10 +17,9 @@ _No verified independent adopters are listed yet._
 
 Founding-team repositories are listed separately and do not count as independent adoption.
 
-_No public founding-team pilot is listed yet._
-
 | Repository | Evidence | Integration | Maintainer | Verified |
 |---|---|---|---|---|
+| [bilgi-ship-it/ustaca-ai](https://github.com/bilgi-ship-it/ustaca-ai) | [policy, expected decisions, and workflow](https://github.com/bilgi-ship-it/ustaca-ai/tree/main/.kepenk) | Pinned GitHub Action and repository policy | [bilgi-ship-it](https://github.com/bilgi-ship-it) | 2026-07-31 |
 
 ## Entry requirements
 
