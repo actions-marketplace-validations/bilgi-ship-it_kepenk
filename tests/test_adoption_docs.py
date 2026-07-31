@@ -65,7 +65,10 @@ def test_ustaca_ai_case_study_is_reproducible_and_honestly_classified() -> None:
     assert "What the evidence does not show" in case_study
     assert "production-security certification" in case_study
     assert "does not prove that" in case_study
-    assert "does not prove ownership, identity, URL availability" in case_study
+    assert (
+        "adoption-manifest validation proves ownership, identity, URL availability"
+        in case_study
+    )
 
 
 def test_adoption_evidence_guide_links_real_founding_team_validation() -> None:
