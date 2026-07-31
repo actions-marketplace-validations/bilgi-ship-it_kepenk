@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/bilgi-ship-it/kepenk/main/schemas/kepenk-tests-v1.schema.json",
+  "title": "Kepenk policy test suite version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "cases"],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/case"
+      }
+    }
+  },
+  "$defs": {
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "action", "expect"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "$ref": "#/$defs/action"
+        },
+        "expect": {
+          "$ref": "#/$defs/expectation"
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "type": ["string", "null"]
+        },
+        "path": {
+          "type": ["string", "null"]
+        },
+        "host": {
+          "type": ["string", "null"]
+        },
+        "metadata": {
+          "type": "object"
+        }
+      }
+    },
+    "expectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effect", "rule_id"],
+      "properties": {
+        "effect": {
+          "enum": ["allow", "approval", "deny"]
+        },
+        "rule_id": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
