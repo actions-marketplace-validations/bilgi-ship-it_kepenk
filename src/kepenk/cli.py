@@ -14,6 +14,7 @@ from .policy import load_policy
 from .policy_tests import evaluate_policy_test_suite, load_policy_test_suite
 from .protocol import run_protocol
 from .runner import display_command, run_command
+from .sarif import write_sarif
 
 EXIT_TEST_FAILED = 1
 EXIT_USAGE = 64
@@ -66,6 +67,18 @@ def _parser() -> argparse.ArgumentParser:
 
     verify = sub.add_parser("verify-audit", help="Verify the audit hash chain")
     verify.add_argument("--audit", help="Audit path; defaults to policy audit.path")
+
+    sarif = sub.add_parser(
+        "export-sarif",
+        help="Export denied audit decisions as SARIF 2.1.0",
+    )
+    sarif.add_argument("--audit", help="Audit path; defaults to policy audit.path")
+    sarif.add_argument("--output", help="Write SARIF to this file instead of stdout")
+    sarif.add_argument(
+        "--include-approval",
+        action="store_true",
+        help="Include approval-required decisions as warning results",
+    )
     return parser
 
 
@@ -225,6 +238,17 @@ def main(argv: list[str] | None = None) -> int:
                 return 0
             print(f"invalid audit chain after {count} events: {error}", file=sys.stderr)
             return EXIT_USAGE
+
+        if args.subcommand == "export-sarif":
+            selected_path = args.audit or audit_path
+            rendered = write_sarif(
+                selected_path,
+                args.output,
+                include_approval=args.include_approval,
+            )
+            if args.output is None:
+                sys.stdout.write(rendered)
+            return 0
 
         if args.subcommand == "run":
             command = list(args.command)
