@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/bilgi-ship-it/kepenk/main/schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/powershell-audit.jsonl
+
+rules:
+  - id: deny-recursive-powershell-delete
+    effect: deny
+    reason: Recursive deletion from PowerShell is blocked for coding agents.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])(?:Remove-Item|ri)\b[^\n]*(?:-Recurse|-r)\b
+
+  - id: deny-cmd-recursive-delete
+    effect: deny
+    reason: Recursive directory deletion through cmd.exe is blocked.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])(?:rmdir|rd)\b[^\n]*(?:/s)\b
+
+  - id: require-approval-for-git-push
+    effect: approval
+    reason: Remote Git changes require explicit maintainer approval.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])git\s+push(?:\s|['"]|$)
+
+  - id: require-approval-for-package-publish
+    effect: approval
+    reason: Package publishing is externally visible and requires approval.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])(?:Publish-Module|Publish-Script|dotnet\s+nuget\s+push|npm\s+publish|twine\s+upload)(?:\s|['"]|$)
+
+  - id: allow-powershell-tests
+    effect: allow
+    reason: Local test execution is reversible and low risk.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])(?:Invoke-Pester|dotnet\s+test|pytest|python\s+-m\s+pytest)(?:\s|['"]|$)
+
+  - id: allow-read-only-powershell-inspection
+    effect: allow
+    reason: Read-only PowerShell inspection is low risk.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])(?:Get-ChildItem|Get-Content|Select-String|Get-Location)(?:\s|['"]|$)
+
+  - id: allow-read-only-git
+    effect: allow
+    reason: Read-only Git inspection is low risk.
+    match:
+      action: shell
+      command_regex: >-
+        (?i)(?:^|[\s'"])git\s+(?:status|diff|log|show)(?:\s|['"]|$)
