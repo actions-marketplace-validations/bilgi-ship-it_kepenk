@@ -18,6 +18,19 @@ Public integrations may be submitted to the consent-based [adopter registry](ADO
 
 A reusable [case-study outline](docs/case-study-template.md), [adopter pull-request template](.github/PULL_REQUEST_TEMPLATE/adopter.md), and [reproducible Ustaca AI founding-team case study](docs/case-studies/ustaca-ai.md) are available. The founding-team case study is public integration evidence, not independent adoption.
 
+## Contribute or become the first independent adopter
+
+The [ten-minute contributor quickstart](docs/contributor-quickstart.md) covers fork, environment, checks, a focused first change, and a draft pull request.
+
+Current unassigned community work:
+
+- [#57 — GitLab CI policy-check guide](https://github.com/bilgi-ship-it/kepenk/issues/57): documentation-focused `good first issue`;
+- [#58 — Azure Pipelines policy-check guide](https://github.com/bilgi-ship-it/kepenk/issues/58): documentation-focused `good first issue`;
+- [#59 — OpenTelemetry-compatible redacted audit export](https://github.com/bilgi-ship-it/kepenk/issues/59): larger privacy-first design and implementation task;
+- [#65 — adopt Kepenk in an independent public repository](https://github.com/bilgi-ship-it/kepenk/issues/65): consent-based public integration evidence.
+
+The current public record has one founding-team pilot, no verified independent adopter, and no recorded outside contributor. These counts are kept deliberately separate. See the [public project-evidence snapshot](docs/project-evidence.md).
+
 ## v0.3 release highlights
 
 Kepenk v0.3.0 adds declarative policy regression tests, explicit repository-scoped policy context, privacy-safe SARIF reporting, and Ed25519-signed approval receipts.
@@ -57,6 +70,8 @@ Current maintainer ownership, response targets, review practice, release cadence
 
 ## Project links
 
+- [Contributor quickstart](docs/contributor-quickstart.md)
+- [Public project evidence](docs/project-evidence.md)
 - [Adoption guide](docs/adoption.md)
 - [Adopter registry](ADOPTERS.md)
 - [Ustaca AI case study](docs/case-studies/ustaca-ai.md)
