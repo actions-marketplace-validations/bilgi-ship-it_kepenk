@@ -2,6 +2,25 @@
 
 All notable changes will be documented here.
 
+## [Unreleased]
+
+### Added
+
+- declarative version-1 policy test suites and the `kepenk test` command
+- public adopter onboarding, evidence registry, case-study outline, and submission template
+- first disclosed founding-team pilot in the public Ustaca AI repository
+
+## [0.2.1] - 2026-07-31
+
+### Fixed
+
+- the composite GitHub Action no longer enables consumer-repository pip caching, so it works in repositories without Python dependency files
+
+### Compatibility
+
+- Action inputs, outputs, exit codes, and the pinned setup-python revision remain compatible with v0.2.0
+- the public npm/Turborepo founding-team pilot passes when pinned to `v0.2.1`
+
 ## [0.2.0] - 2026-07-31
 
 ### Added
