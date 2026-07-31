@@ -31,6 +31,10 @@ inputs:
     description: Optional host used in check mode
     required: false
     default: ""
+  repository:
+    description: Explicit repository or workspace context; never auto-detected
+    required: false
+    default: ""
   metadata_json:
     description: Optional JSON object used as action metadata
     required: false
@@ -75,5 +79,6 @@ runs:
         KEPENK_ACTION_COMMAND: ${{ inputs.command }}
         KEPENK_ACTION_PATH_VALUE: ${{ inputs.path }}
         KEPENK_ACTION_HOST: ${{ inputs.host }}
+        KEPENK_ACTION_REPOSITORY: ${{ inputs.repository }}
         KEPENK_ACTION_METADATA_JSON: ${{ inputs.metadata_json }}
       run: python -m kepenk.github_action
