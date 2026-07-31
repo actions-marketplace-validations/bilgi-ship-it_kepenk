@@ -10,27 +10,56 @@ Kepenk sits between an agent and a side-effecting action. It evaluates a local Y
 
 The project is provider-neutral, local-first, and designed for coding agents, CLI automations, CI jobs, and maintainer workflows.
 
-> Status: early alpha. The policy format is intentionally small and may evolve before v1.0.
+> Status: early alpha. The current public release is [`v0.1.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). The policy format may evolve before v1.0.
 
 ## Why Kepenk?
 
 AI coding agents can modify files, run shell commands, call APIs, publish packages, and change production systems. A prompt-level instruction is useful, but it is not an enforcement boundary. Kepenk provides a deterministic policy check outside the model and writes a tamper-evident audit chain.
 
-Kepenk does **not** claim to be a sandbox. It is an approval and policy layer that should be combined with operating-system isolation, least-privilege credentials, and normal security controls.
+Kepenk does **not** claim to be a sandbox. It is an approval and policy layer that should be combined with operating-system isolation, least-privilege credentials, protected branches, and normal security controls.
 
-## Quick start
+## Install the current release
+
+Kepenk can be installed directly from the verified GitHub release tag; PyPI is not required.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.1.0.zip"
 
+kepenk --help
 kepenk init
+kepenk validate
+```
+
+On Windows PowerShell, activate the environment with:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+## Five-minute example
+
+```bash
+kepenk init
+kepenk validate
+kepenk check --action shell --command "python -m pytest"
 kepenk check --action shell --command "git push origin main"
 kepenk run -- python -m pytest
 ```
 
-The generated `kepenk.yaml` starts with conservative defaults.
+The generated `kepenk.yaml` starts with conservative defaults. Safe local tests can be allowed, publishing actions can require approval, and destructive actions can be denied.
+
+## Development installation
+
+```bash
+git clone https://github.com/bilgi-ship-it/kepenk.git
+cd kepenk
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev]"
+pytest
+```
 
 ## Policy example
 
@@ -81,6 +110,7 @@ The schema catches structural errors early. Kepenk still performs its own determ
 
 ```text
 kepenk init [--force]
+kepenk validate [--json]
 kepenk check --action TYPE [--command TEXT] [--path PATH] [--host HOST] [--json]
 kepenk run [--yes] -- COMMAND [ARG ...]
 kepenk verify-audit [--audit PATH]
@@ -103,25 +133,24 @@ Exit codes:
 5. **Human control** — risky actions can pause for explicit approval.
 6. **Auditable** — every decision can be written to a hash-chained JSONL log.
 
-## Scope for v0.1
-
-- YAML policy loader and validation
-- ordered rule evaluation
-- shell, filesystem, network, git, and generic action types
-- interactive approval flow
-- hash-chained JSONL audit log
-- CLI suitable for wrappers and hooks
-
-See [ROADMAP.md](ROADMAP.md) for planned adapters and integrations.
-
 ## Integrations
 
-- [Codex integration](docs/integrations/codex.md): non-interactive `check`, `run`, and explicit `approve` workflow with a sample policy and `AGENTS.md`.
+- [Codex integration](docs/integrations/codex.md): non-interactive `check` and `run` workflows with a sample policy and `AGENTS.md`.
 - [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
+- [PowerShell examples](docs/powershell.md): Windows-specific quoting, command matching, and policy limitations.
+
+## Current v0.2 priorities
+
+- [Structured stdin/stdout protocol](https://github.com/bilgi-ship-it/kepenk/issues/18)
+- [Real-world policy packs](https://github.com/bilgi-ship-it/kepenk/issues/19)
+- [Reproducible agent-safety demos](https://github.com/bilgi-ship-it/kepenk/issues/20)
+- [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
+
+See [ROADMAP.md](ROADMAP.md) for the full plan.
 
 ## Releasing
 
-See [docs/releasing.md](docs/releasing.md) for the reproducible wheel/sdist verification process and first-release checklist.
+The verified wheel and source distribution are attached to the [`v0.1.0` GitHub Release](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.1.0). See [docs/releasing.md](docs/releasing.md) for the reproducible build and clean-install process. Public PyPI publication is optional and currently deferred.
 
 ## Security
 
@@ -129,7 +158,7 @@ Read [SECURITY.md](SECURITY.md) before production use. Report vulnerabilities pr
 
 ## Contributing
 
-Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and issues labeled `good first issue`.
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the issues labeled [`good first issue`](https://github.com/bilgi-ship-it/kepenk/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
 
 ## License
 
