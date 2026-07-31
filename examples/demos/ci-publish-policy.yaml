@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: deny
+
+audit:
+  path: .kepenk/audit-ci-publish-demo.jsonl
+
+rules:
+  - id: require-approval-for-package-publish
+    effect: approval
+    reason: Publishing an immutable package requires explicit maintainer approval.
+    match:
+      action: shell
+      command_regex: '(^|\s)(?:twine\s+upload|python(?:3(?:\.\d+)?)?\s+-m\s+twine\s+upload)(?:\s|$)'
+
+  - id: allow-local-package-build
+    effect: allow
+    reason: Building local artifacts does not publish them.
+    match:
+      action: shell
+      command_regex: '(^|\s)python(?:3(?:\.\d+)?)?\s+-m\s+build(?:\s|$)'

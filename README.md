@@ -52,13 +52,7 @@ The generated `kepenk.yaml` starts with conservative defaults. Safe local tests 
 
 ## Policy packs
 
-Start from a reviewed example instead of writing every rule from scratch:
-
-| Pack | Allows | Requires approval | Denies |
-|---|---|---|---|
-| [Python development](examples/policies/python-development.yaml) | tests, lint, type checks, local builds | dependency installation, package publishing | recursive deletion of root-like paths |
-| [Git maintenance](examples/policies/git-maintenance.yaml) | status, diff, log and read-only inspection | push and history changes | force-push, hard reset, aggressive clean |
-| [Docker maintenance](examples/policies/docker-maintenance.yaml) | state and configuration inspection | builds, runs and registry operations | system prune, volume deletion, forced removal |
+Kepenk includes ten reviewed starting policies for Python, Git, Docker, npm, PyPI, Terraform, database migrations, filesystem cleanup, read-only repository inspection, and CI/CD releases.
 
 ```bash
 cp examples/policies/python-development.yaml kepenk.yaml
@@ -67,6 +61,23 @@ kepenk check --action shell --command "python -m pytest"
 ```
 
 Every committed policy pack is validated in CI and covered by representative allow, approval and deny tests. Review and adapt a pack before use; these examples are not universal security policies. See [the policy-pack guide](examples/policies/README.md).
+
+## Reproducible safety demos
+
+Three executable demos show the core enforcement behavior without running a push, destructive delete, deployment, or package upload:
+
+1. [Allow tests, pause Git push](docs/demos/test-vs-push.md)
+2. [Deny destructive deletion and verify the audit chain](docs/demos/destructive-delete-audit.md)
+3. [Block a publishing step in GitHub Actions](docs/demos/ci-publish-gate.md)
+
+Run the two local demonstrations with:
+
+```bash
+python -m pip install -e ".[dev]"
+python scripts/run_safety_demos.py
+```
+
+The script is part of the Ubuntu and Windows CI matrix. The publishing demo has its own executable workflow at `.github/workflows/demo-publish-gate.yml`.
 
 ## Development installation
 
@@ -161,10 +172,10 @@ Exit codes:
 
 ## Current v0.2 priorities
 
-- [Structured stdin/stdout protocol](https://github.com/bilgi-ship-it/kepenk/issues/18)
-- [Real-world policy packs](https://github.com/bilgi-ship-it/kepenk/issues/19)
-- [Reproducible agent-safety demos](https://github.com/bilgi-ship-it/kepenk/issues/20)
-- [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
+- [x] [Structured stdin/stdout protocol](https://github.com/bilgi-ship-it/kepenk/issues/18)
+- [x] [Real-world policy packs](https://github.com/bilgi-ship-it/kepenk/issues/19)
+- [x] [Reproducible agent-safety demos](https://github.com/bilgi-ship-it/kepenk/issues/20)
+- [ ] [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

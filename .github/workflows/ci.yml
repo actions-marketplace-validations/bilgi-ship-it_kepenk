@@ -28,6 +28,7 @@ jobs:
       - run: ruff check .
       - run: mypy src/kepenk
       - run: pytest
+      - run: python scripts/run_safety_demos.py
 
   package:
     runs-on: ubuntu-latest

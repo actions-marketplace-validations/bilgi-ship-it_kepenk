@@ -1,0 +1,51 @@
+name: Demo - Publish Gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/demo-publish-gate.yml"
+      - "action.yml"
+      - "examples/demos/ci-publish-policy.yaml"
+      - "src/kepenk/**"
+
+permissions:
+  contents: read
+
+jobs:
+  prove-publish-is-blocked:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Check proposed publish command
+        id: gate
+        continue-on-error: true
+        uses: ./
+        with:
+          mode: check
+          policy: examples/demos/ci-publish-policy.yaml
+          action_type: shell
+          command: twine upload dist/*
+
+      - name: Simulated publish step
+        if: steps.gate.outputs.effect == 'allow'
+        shell: bash
+        run: |
+          touch "$RUNNER_TEMP/kepenk-demo-publish-ran"
+          echo "The simulated publish step should not run for this demo." >&2
+          exit 1
+
+      - name: Verify the gate blocked publishing
+        if: always()
+        shell: bash
+        env:
+          GATE_OUTCOME: ${{ steps.gate.outcome }}
+          GATE_EFFECT: ${{ steps.gate.outputs.effect }}
+          GATE_RULE: ${{ steps.gate.outputs.rule_id }}
+        run: |
+          test "$GATE_OUTCOME" = "failure"
+          test "$GATE_EFFECT" = "approval"
+          test "$GATE_RULE" = "require-approval-for-package-publish"
+          test ! -e "$RUNNER_TEMP/kepenk-demo-publish-ran"
+          echo "Kepenk returned approval and the publish step was skipped."
