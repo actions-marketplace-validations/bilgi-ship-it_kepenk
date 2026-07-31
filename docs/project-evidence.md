@@ -60,9 +60,9 @@ Current evidence is deliberately separated by ownership:
 - verified independent adopters: **0**;
 - recorded outside contributors: **0**.
 
-The Ustaca AI pilot proves that Kepenk v0.3.0 installs and runs in a public npm/Turborepo repository without Python project metadata. It exercises policy validation, an eight-case regression suite, explicit repository context and representative allow, approval and deny outputs.
+The Ustaca AI pilot proves that Kepenk v0.4.0 installs and runs in a public npm/Turborepo repository without Python project metadata. Its public CI validates the policy, an eight-case regression suite, a version-1 offline adoption manifest, explicit repository context, and representative allow, approval and deny outputs.
 
-The pilot does not count as independent adoption and is not presented as a production-security certification.
+The pilot does not count as independent adoption and is not presented as repository attestation or a production-security certification. Local manifest validation does not prove ownership, identity, URL availability, complete policy coverage, or independent adoption.
 
 ## Open external contribution paths
 
