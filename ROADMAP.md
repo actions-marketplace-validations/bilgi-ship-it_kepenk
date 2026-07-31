@@ -36,7 +36,7 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 - [x] policy packs for release and package publishing
 - [x] declarative policy test suites for expected decisions ([#37](https://github.com/bilgi-ship-it/kepenk/issues/37))
 - [x] repository-scoped approval contexts ([#39](https://github.com/bilgi-ship-it/kepenk/issues/39))
-- [ ] signed approval receipts ([#40](https://github.com/bilgi-ship-it/kepenk/issues/40))
+- [x] signed approval receipts ([#40](https://github.com/bilgi-ship-it/kepenk/issues/40))
 - [x] audit export in SARIF format ([#41](https://github.com/bilgi-ship-it/kepenk/issues/41))
 - [ ] OpenTelemetry-compatible audit export
 
