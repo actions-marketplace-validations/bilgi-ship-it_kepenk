@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-filesystem-cleanup.jsonl
+
+rules:
+  - id: deny-root-like-recursive-delete
+    effect: deny
+    reason: Recursive deletion of a root, home, or drive path is never allowed.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)(?:sudo\s+)?rm\s+-[^\n]*r[^\n]*\s+(?:/|/\*|~)(?:\s|$)'
+        - '(?i)(^|\s)remove-item\b[^\n]*(?:-recurse)[^\n]*(?:-force)[^\n]*(?:[A-Z]:\\|~)(?:\s|$)'
+        - '(?i)(^|\s)(?:rd|rmdir)\s+/s\s+/q\s+[A-Z]:\\(?:\s|$)'
+
+  - id: deny-root-find-delete
+    effect: deny
+    reason: Deleting from a filesystem root can remove unrelated system and application files.
+    match:
+      action: shell
+      command_regex: '(^|\s)find\s+(?:/|~)\b[^\n]*-delete(?:\s|$)'
+
+  - id: require-approval-for-recursive-cleanup
+    effect: approval
+    reason: Recursive cleanup can remove generated files, caches, or user data.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)(?:rm|sudo\s+rm)\s+-[^\n]*r(?:[^\n]*)(?:\s|$)'
+        - '(^|\s)find\b[^\n]*-delete(?:\s|$)'
+        - '(?i)(^|\s)remove-item\b[^\n]*-recurse(?:\s|$)'
+        - '(^|\s)git\s+clean\b[^\n]*(?:-f|--force)(?:\s|$)'
+
+  - id: allow-cleanup-preview
+    effect: allow
+    reason: Dry-run and listing commands show cleanup targets without deleting them.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)git\s+clean\b[^\n]*(?:-n|--dry-run)(?:\s|$)'
+        - '(^|\s)find\b[^\n]*(?:-print|-ls)(?:\s|$)'
+        - '(^|\s)(?:du|ls)\b(?:\s|$)'
+        - '(?i)(^|\s)get-childitem(?:\s|$)'

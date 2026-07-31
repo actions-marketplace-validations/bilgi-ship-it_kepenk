@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-ci-cd-release.jsonl
+
+rules:
+  - id: deny-namespace-deletion
+    effect: deny
+    reason: Deleting a Kubernetes namespace can remove all workloads and data in that environment.
+    match:
+      action: shell
+      command_regex: '(^|\s)kubectl\s+delete\s+namespace(?:\s|$)'
+
+  - id: deny-release-deletion
+    effect: deny
+    reason: Deleting published releases or deployed applications can disrupt users and recovery.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)gh\s+release\s+delete(?:\s|$)'
+        - '(^|\s)helm\s+uninstall(?:\s|$)'
+        - '(^|\s)aws\s+s3\s+rm\b[^\n]*--recursive(?:\s|$)'
+
+  - id: require-approval-for-deployment
+    effect: approval
+    reason: Deployment commands change shared runtime environments.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)kubectl\s+(?:apply|create|replace|patch|set|scale|rollout\s+(?:restart|undo))(?:\s|$)'
+        - '(^|\s)helm\s+(?:install|upgrade|rollback)(?:\s|$)'
+        - '(^|\s)(?:gcloud\s+run\s+deploy|vercel\b[^\n]*--prod)(?:\s|$)'
+
+  - id: require-approval-for-release-publish
+    effect: approval
+    reason: Publishing a release changes shared package or artifact state.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)gh\s+release\s+(?:create|edit)(?:\s|$)'
+        - '(^|\s)(?:npm\s+publish|uv\s+publish|twine\s+upload)(?:\s|$)'
+        - '(^|\s)aws\s+s3\s+(?:cp|sync)(?:\s|$)'
+
+  - id: allow-deployment-inspection
+    effect: allow
+    reason: Status and diff commands inspect deployment state without changing it.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)kubectl\s+(?:get|describe|diff|logs|version)(?:\s|$)'
+        - '(^|\s)helm\s+(?:list|status|template|history)(?:\s|$)'
+        - '(^|\s)gh\s+release\s+(?:list|view)(?:\s|$)'
+        - '(^|\s)aws\s+s3\s+ls(?:\s|$)'
+        - '(^|\s)gcloud\s+run\s+services\s+describe(?:\s|$)'

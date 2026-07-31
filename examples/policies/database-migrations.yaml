@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: approval
+
+audit:
+  path: .kepenk/audit-database-migrations.jsonl
+
+rules:
+  - id: deny-destructive-sql
+    effect: deny
+    reason: DROP and TRUNCATE statements can permanently remove schemas or data.
+    match:
+      action: shell
+      command_regex: '(?i)(?:^|[\s"''])\s*(?:drop\s+(?:database|schema|table)|truncate\s+(?:table\s+)?)\b'
+
+  - id: deny-full-migration-reset
+    effect: deny
+    reason: Full reset and downgrade-to-base operations can erase or roll back all application data.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)alembic\s+downgrade\s+base(?:\s|$)'
+        - '(^|\s)(?:python(?:3(?:\.\d+)?)?\s+manage\.py\s+flush|rails\s+db:(?:drop|reset)|prisma\s+migrate\s+reset)(?:\s|$)'
+
+  - id: require-approval-for-migration-apply
+    effect: approval
+    reason: Applying migrations changes shared database schema or data.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)alembic\s+upgrade(?:\s|$)'
+        - '(^|\s)python(?:3(?:\.\d+)?)?\s+manage\.py\s+migrate(?:\s|$)'
+        - '(^|\s)rails\s+db:migrate(?:\s|$)'
+        - '(^|\s)prisma\s+migrate\s+deploy(?:\s|$)'
+        - '(^|\s)(?:knex|sequelize)\s+.*migrate(?:\s|$)'
+
+  - id: require-approval-for-migration-rollback
+    effect: approval
+    reason: Rolling back migrations can remove columns, tables, or transformed data.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)alembic\s+downgrade(?:\s|$)'
+        - '(^|\s)rails\s+db:rollback(?:\s|$)'
+        - '(^|\s)prisma\s+migrate\s+resolve(?:\s|$)'
+
+  - id: allow-migration-status
+    effect: allow
+    reason: Migration status and history commands are read-only inspections.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)alembic\s+(?:current|history|heads|branches)(?:\s|$)'
+        - '(^|\s)python(?:3(?:\.\d+)?)?\s+manage\.py\s+(?:showmigrations|makemigrations\s+--check)(?:\s|$)'
+        - '(^|\s)rails\s+db:migrate:status(?:\s|$)'
+        - '(^|\s)prisma\s+migrate\s+(?:status|diff)(?:\s|$)'

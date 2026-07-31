@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=../../schemas/kepenk-policy-v1.schema.json
+version: 1
+default: deny
+
+audit:
+  path: .kepenk/audit-read-only-repository-inspection.jsonl
+
+rules:
+  - id: deny-git-mutations
+    effect: deny
+    reason: This pack is read-only; Git mutations and remote writes are not permitted.
+    match:
+      action: shell
+      command_regex: '(^|\s)git\s+(?:add|commit|push|pull|fetch|merge|rebase|reset|clean|checkout|switch|restore|branch|tag|cherry-pick|revert)(?:\s|$)'
+
+  - id: deny-filesystem-writes
+    effect: deny
+    reason: This pack is read-only; file creation, deletion, movement, and in-place editing are not permitted.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)(?:rm|mv|cp|mkdir|touch|tee)(?:\s|$)'
+        - '(^|\s)sed\b[^\n]*\s-i(?:\s|$)'
+        - '(?i)(^|\s)(?:remove-item|move-item|copy-item|new-item|set-content|add-content)(?:\s|$)'
+
+  - id: allow-git-inspection
+    effect: allow
+    reason: These Git commands inspect repository state without modifying it.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)git\s+(?:status|diff|log|show|rev-parse|ls-files|ls-tree|grep|blame|remote\s+-v)(?:\s|$)'
+        - '(^|\s)git\s+branch\s+--show-current(?:\s|$)'
+
+  - id: allow-text-search-and-reading
+    effect: allow
+    reason: Text search and file-reading commands are read-only when used without write flags.
+    match:
+      action: shell
+      command_regex:
+        - '(^|\s)(?:rg|grep|cat|head|tail|wc|file)(?:\s|$)'
+        - '(^|\s)find\b(?![^\n]*-delete)[^\n]*(?:-print|-ls)(?:\s|$)'
+        - '(?i)(^|\s)(?:get-content|get-childitem|select-string)(?:\s|$)'
+
+  - id: allow-repository-metadata-inspection
+    effect: allow
+    reason: GitHub CLI list and view commands read repository metadata.
+    match:
+      action: shell
+      command_regex: '(^|\s)gh\s+(?:repo|issue|pr|release|workflow|run)\s+(?:list|view|status)(?:\s|$)'

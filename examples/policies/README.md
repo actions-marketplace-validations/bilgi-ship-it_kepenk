@@ -10,6 +10,10 @@ These examples are conservative starting points for common coding-agent and main
 | [`npm-package-maintenance.yaml`](npm-package-maintenance.yaml) | tests, static checks, registry inspection | install, publish, version and dist-tag changes | unpublish and owner removal |
 | [`pypi-release-maintenance.yaml`](pypi-release-maintenance.yaml) | local build, metadata checks, public index inspection | package upload and environment changes | insecure upload and TLS-bypass installation |
 | [`terraform-infrastructure.yaml`](terraform-infrastructure.yaml) | format, validate and read-only inspection | plan, init, apply and state changes | destroy, auto-approved apply and state removal |
+| [`database-migrations.yaml`](database-migrations.yaml) | migration status and history | apply and rollback operations | destructive SQL and full resets |
+| [`filesystem-cleanup.yaml`](filesystem-cleanup.yaml) | dry-run and target listing | recursive cleanup | root, home and drive deletion |
+| [`read-only-repository-inspection.yaml`](read-only-repository-inspection.yaml) | repository and file inspection | none; unknown actions are denied | Git mutations, file writes and all unrecognized actions |
+| [`ci-cd-release.yaml`](ci-cd-release.yaml) | deployment and release inspection | deployment and publishing | namespace, release and recursive artifact deletion |
 
 ## Use a pack
 
@@ -20,7 +24,7 @@ kepenk check --action shell --command "python -m pytest"
 kepenk check --action shell --command "python -m pip install requests"
 ```
 
-Kepenk uses the first matching rule. Put narrow deny rules before broader approval or allow rules. Unmatched actions use the policy's `default`, which is `approval` in these packs.
+Kepenk uses the first matching rule. Put narrow deny rules before broader approval or allow rules. Unmatched actions use each pack's `default`. Most packs default to `approval`; the read-only repository pack defaults to `deny`.
 
 ## Security boundary
 
@@ -30,7 +34,7 @@ Policy packs are examples, not universal security policies. Command strings can 
 
 ```bash
 python scripts/validate_policy_examples.py
-pytest tests/test_policy_packs.py tests/test_policy_packs_batch2.py
+pytest tests/test_policy_packs.py tests/test_policy_packs_batch2.py tests/test_policy_packs_batch3.py
 ```
 
 CI runs both structural validation and representative decision tests for every committed pack.
