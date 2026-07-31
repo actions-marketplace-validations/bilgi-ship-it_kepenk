@@ -32,7 +32,12 @@ from kepenk.receipts import (
 ISSUED_AT = datetime(2026, 7, 31, 12, 0, 0, tzinfo=UTC)
 
 
-def _policy_data(audit_path: Path, *, effect: str = "approval", reason: str = "Push requires approval") -> dict[str, Any]:
+def _policy_data(
+    audit_path: Path,
+    *,
+    effect: str = "approval",
+    reason: str = "Push requires approval",
+) -> dict[str, Any]:
     return {
         "version": 1,
         "default": "deny",
@@ -181,14 +186,36 @@ def test_action_mutation_is_rejected(tmp_path: Path, mutated: Action) -> None:
         )
 
 
-def test_replay_context_wrong_key_expiry_and_future_time_are_rejected(tmp_path: Path) -> None:
+def test_replay_context_wrong_key_expiry_and_future_time_are_rejected(
+    tmp_path: Path,
+) -> None:
     policy, private_key, action, receipt = _bundle(tmp_path)
 
     cases = [
-        ("nonce", private_key.public_key(), "another-run", ISSUED_AT + timedelta(seconds=1)),
-        ("key ID", Ed25519PrivateKey.generate().public_key(), "run-123/action-1", ISSUED_AT + timedelta(seconds=1)),
-        ("expired", private_key.public_key(), "run-123/action-1", ISSUED_AT + timedelta(seconds=600)),
-        ("future", private_key.public_key(), "run-123/action-1", ISSUED_AT - timedelta(seconds=61)),
+        (
+            "nonce",
+            private_key.public_key(),
+            "another-run",
+            ISSUED_AT + timedelta(seconds=1),
+        ),
+        (
+            "key ID",
+            Ed25519PrivateKey.generate().public_key(),
+            "run-123/action-1",
+            ISSUED_AT + timedelta(seconds=1),
+        ),
+        (
+            "expired",
+            private_key.public_key(),
+            "run-123/action-1",
+            ISSUED_AT + timedelta(seconds=600),
+        ),
+        (
+            "future",
+            private_key.public_key(),
+            "run-123/action-1",
+            ISSUED_AT - timedelta(seconds=61),
+        ),
     ]
     for message, public_key, nonce, now in cases:
         with pytest.raises(ReceiptError, match=message):
@@ -202,12 +229,14 @@ def test_replay_context_wrong_key_expiry_and_future_time_are_rejected(tmp_path: 
             )
 
 
-def test_signature_payload_algorithm_unknown_fields_and_unsigned_receipts_fail(tmp_path: Path) -> None:
+def test_signed_envelope_mutations_and_unsigned_receipts_fail(tmp_path: Path) -> None:
     policy, private_key, action, receipt = _bundle(tmp_path)
 
     bad_signature = copy.deepcopy(receipt)
     first = bad_signature["signature"][0]
-    bad_signature["signature"] = ("A" if first != "A" else "B") + bad_signature["signature"][1:]
+    bad_signature["signature"] = (
+        ("A" if first != "A" else "B") + bad_signature["signature"][1:]
+    )
 
     bad_payload = copy.deepcopy(receipt)
     bad_payload["payload"]["decision"]["reason"] = "Mutated reason"
@@ -308,51 +337,89 @@ def test_cli_key_create_verify_are_separate_from_execution(tmp_path: Path, capsy
     public_path = tmp_path / "public.pem"
     receipt_path = tmp_path / "approval.json"
 
-    assert cli_main([
-        "generate-receipt-key",
-        "--private-key", str(private_path),
-        "--public-key", str(public_path),
-    ]) == 0
+    assert (
+        cli_main(
+            [
+                "generate-receipt-key",
+                "--private-key",
+                str(private_path),
+                "--public-key",
+                str(public_path),
+            ]
+        )
+        == 0
+    )
     key_output = json.loads(capsys.readouterr().out)
     assert key_output["created"] is True
     assert "BEGIN PRIVATE KEY" not in json.dumps(key_output)
 
     action_args = [
-        "--action", "shell",
-        "--command", "git push origin main",
-        "--repository", "example/project",
-        "--metadata", "workflow=release",
+        "--action",
+        "shell",
+        "--command",
+        "git push origin main",
+        "--repository",
+        "example/project",
+        "--metadata",
+        "workflow=release",
     ]
-    assert cli_main([
-        "--policy", str(policy_path),
-        "create-receipt",
-        "--private-key", str(private_path),
-        "--nonce", "cli-run/action-1",
-        "--output", str(receipt_path),
-        *action_args,
-    ]) == 0
+    assert (
+        cli_main(
+            [
+                "--policy",
+                str(policy_path),
+                "create-receipt",
+                "--private-key",
+                str(private_path),
+                "--nonce",
+                "cli-run/action-1",
+                "--output",
+                str(receipt_path),
+                *action_args,
+            ]
+        )
+        == 0
+    )
     assert capsys.readouterr().out == ""
     assert not (tmp_path / "audit.jsonl").exists()
 
-    assert cli_main([
-        "--policy", str(policy_path),
-        "verify-receipt",
-        "--receipt", str(receipt_path),
-        "--public-key", str(public_path),
-        "--nonce", "cli-run/action-1",
-        *action_args,
-    ]) == 0
+    assert (
+        cli_main(
+            [
+                "--policy",
+                str(policy_path),
+                "verify-receipt",
+                "--receipt",
+                str(receipt_path),
+                "--public-key",
+                str(public_path),
+                "--nonce",
+                "cli-run/action-1",
+                *action_args,
+            ]
+        )
+        == 0
+    )
     assert json.loads(capsys.readouterr().out)["valid"] is True
     assert not (tmp_path / "audit.jsonl").exists()
 
-    assert cli_main([
-        "--policy", str(policy_path),
-        "verify-receipt",
-        "--receipt", str(receipt_path),
-        "--public-key", str(public_path),
-        "--nonce", "another-run/action-1",
-        *action_args,
-    ]) == EXIT_USAGE
+    assert (
+        cli_main(
+            [
+                "--policy",
+                str(policy_path),
+                "verify-receipt",
+                "--receipt",
+                str(receipt_path),
+                "--public-key",
+                str(public_path),
+                "--nonce",
+                "another-run/action-1",
+                *action_args,
+            ]
+        )
+        == EXIT_USAGE
+    )
     captured = capsys.readouterr()
     assert captured.out == ""
     assert "nonce" in captured.err
