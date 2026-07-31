@@ -87,4 +87,7 @@ def test_contract_marks_version_one_as_experimental() -> None:
     guide = _read("docs/adoption-evidence.md")
 
     assert "Version 1 is experimental during the v0.4 line" in guide
-    assert "breaking field or classification change requires a new integer manifest version" in guide
+    assert (
+        "breaking field or classification change requires a new integer manifest version"
+        in guide
+    )
