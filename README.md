@@ -16,7 +16,7 @@ The [adoption guide](docs/adoption.md) reaches a first policy decision in five s
 
 Public integrations may be submitted to the consent-based [adopter registry](ADOPTERS.md). Independent adopters and founding-team pilots are recorded separately. Every listed project needs a public repository and a public integration permalink.
 
-A reusable [case-study outline](docs/case-study-template.md) and [adopter pull-request template](.github/PULL_REQUEST_TEMPLATE/adopter.md) are available for maintainers who choose to share their integration.
+A reusable [case-study outline](docs/case-study-template.md), [adopter pull-request template](.github/PULL_REQUEST_TEMPLATE/adopter.md), and [reproducible Ustaca AI founding-team case study](docs/case-studies/ustaca-ai.md) are available. The founding-team case study is public integration evidence, not independent adoption.
 
 ## v0.3 release highlights
 
@@ -59,6 +59,7 @@ Current maintainer ownership, response targets, review practice, release cadence
 
 - [Adoption guide](docs/adoption.md)
 - [Adopter registry](ADOPTERS.md)
+- [Ustaca AI case study](docs/case-studies/ustaca-ai.md)
 - [Maintainer policy](MAINTAINERS.md)
 - [Roadmap](ROADMAP.md)
 - [Contributing](CONTRIBUTING.md)
