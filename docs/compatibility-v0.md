@@ -141,6 +141,49 @@ The command evaluates decisions only. It does not execute test actions and does 
 
 The versioned schema is `schemas/kepenk-tests-v1.schema.json`.
 
+### SARIF audit export
+
+The `kepenk export-sarif` command is experimental during the v0.3 line.
+
+Current interface:
+
+- `kepenk --policy POLICY export-sarif [--audit PATH] [--output PATH] [--include-approval]`;
+- SARIF version `2.1.0`;
+- deny decisions become `error` results;
+- approval decisions are omitted unless `--include-approval` is supplied, then become `warning` results;
+- allow decisions are never exported;
+- the command verifies the complete audit hash chain and event structure before output;
+- invalid input returns exit code `64` and produces no partial standard-output document;
+- command, host, repository, metadata, timestamp, and hash values are not exported;
+- only safe relative action paths may become locations.
+
+The meaning of existing result properties will not be reinterpreted in a patch release. Result ordering follows audit ordering. Minor releases may add optional SARIF properties or documented redaction controls without exposing currently redacted values by default.
+
+See `docs/sarif.md`.
+
+### Signed approval receipt version 1
+
+The following commands and receipt format are experimental during the v0.3 line:
+
+- `kepenk generate-receipt-key --private-key PATH --public-key PATH [--force]`;
+- `kepenk --policy POLICY create-receipt --private-key PATH --nonce VALUE [--expires-in SECONDS] [--output PATH] [--force]` plus structured action fields;
+- `kepenk --policy POLICY verify-receipt --receipt PATH --public-key PATH --nonce VALUE` plus the expected structured action fields;
+- receipt envelope version `1` with exact fields `version`, `algorithm`, `key_id`, `payload`, and `signature`;
+- fixed algorithm value `Ed25519`;
+- payload fields `issued_at`, `expires_at`, `nonce`, `policy_sha256`, `decision`, and `action`;
+- decision effect fixed to `approval`;
+- complete action fields `type`, `command`, `path`, `host`, `repository`, and `metadata`;
+- unpadded base64url Ed25519 signature;
+- SHA-256 key ID, semantic policy digest, and receipt digest;
+- default 600-second lifetime, maximum 24-hour lifetime, and 60-second future clock-skew allowance;
+- exit code `0` on success and `64` on invalid keys, files, fields, signatures, time, nonce, policy, action, or current decision.
+
+Receipt commands do not execute actions and are not accepted by `kepenk run`. Receipt creation is permitted only for a current `approval` decision. Verification reevaluates the current policy and rejects a current `allow` or `deny`. Private key bytes are not accepted through command values, environment variables, policy data, metadata, or receipt fields.
+
+Patch releases will not accept an invalid v1 signature, remove signed fields, reinterpret an existing signed field, change the canonical semantic policy representation, or weaken the exact-action/current-decision checks. A breaking envelope, signature, or canonicalization change requires a new integer receipt version and migration guidance, with v1 verification retained for an overlap period when technically and securely practical.
+
+The versioned schema is `schemas/kepenk-approval-receipt-v1.schema.json`. See `docs/approval-receipts.md` for the threat model, replay boundary, key handling, and integration requirements.
+
 ### MCP adapter
 
 The local command `kepenk-mcp` and tool name `kepenk_check_action` are experimental during v0.2.x.
@@ -188,4 +231,4 @@ This contract does not stabilize:
 
 ## Regression protection
 
-`tests/test_compatibility_contract.py` locks the declared machine-facing names, fields, versions, and exit codes. A contributor changing one of these assertions must also update this document, release notes, and migration guidance rather than silently weakening compatibility.
+`tests/test_compatibility_contract.py`, `tests/test_policy_test_contract.py`, `tests/test_receipt_contract.py`, and the related behavioral tests lock the declared machine-facing names, fields, versions, and exit codes. A contributor changing one of these assertions must also update this document, release notes, and migration guidance rather than silently weakening compatibility.
