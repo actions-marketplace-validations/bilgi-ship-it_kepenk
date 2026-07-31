@@ -79,6 +79,19 @@ python scripts/run_safety_demos.py
 
 The script is part of the Ubuntu and Windows CI matrix. The publishing demo has its own executable workflow at `.github/workflows/demo-publish-gate.yml`.
 
+## MCP policy gate
+
+Install the optional MCP integration and run a local `stdio` server:
+
+```bash
+python -m pip install "kepenk-gate[mcp]"
+kepenk-mcp --policy /absolute/path/to/kepenk.yaml
+```
+
+The server exposes one tool, `kepenk_check_action`. It accepts a structured action, returns the complete `allow`, `approval`, or `deny` decision envelope, and writes the decision to the configured audit chain. It never executes the proposed command or tool call.
+
+See the [MCP integration guide](docs/integrations/mcp.md) for host configuration, result handling, and fail-closed enforcement requirements.
+
 ## Development installation
 
 ```bash
@@ -144,12 +157,13 @@ kepenk check --action TYPE [--command TEXT] [--path PATH] [--host HOST] [--json]
 kepenk run [--yes] -- COMMAND [ARG ...]
 kepenk protocol
 kepenk verify-audit [--audit PATH]
+kepenk-mcp [--policy PATH]
 ```
 
 Exit codes:
 
 - `0`: allowed, approved, or command completed successfully
-- `64`: invalid configuration, CLI input, or JSONL protocol request
+- `64`: invalid configuration, CLI input, JSONL protocol request, or MCP startup input
 - `75`: human approval was required but not granted
 - `77`: denied by policy
 - other: child process exit code
@@ -169,6 +183,7 @@ Exit codes:
 - [JSONL agent protocol](docs/integrations/jsonl-protocol.md): a versioned, long-running stdin/stdout interface for agents and automation tools.
 - [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
 - [pre-commit hook](docs/integrations/pre-commit.md): reject invalid policy files before a commit reaches CI.
+- [MCP policy gate](docs/integrations/mcp.md): expose deterministic decisions through one local read-only MCP tool.
 - [PowerShell examples](docs/powershell.md): Windows-specific quoting, command matching, and policy limitations.
 
 ## Current v0.2 priorities
@@ -177,6 +192,8 @@ Exit codes:
 - [x] [Real-world policy packs](https://github.com/bilgi-ship-it/kepenk/issues/19)
 - [x] [Reproducible agent-safety demos](https://github.com/bilgi-ship-it/kepenk/issues/20)
 - [x] [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
+- [x] [MCP policy-gate adapter](https://github.com/bilgi-ship-it/kepenk/issues/29)
+- [ ] [v0.x integration compatibility contract](https://github.com/bilgi-ship-it/kepenk/issues/30)
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 

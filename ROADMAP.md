@@ -26,8 +26,8 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 - [x] at least 10 real-world policy packs ([#19](https://github.com/bilgi-ship-it/kepenk/issues/19))
 - [x] three reproducible agent-safety demos ([#20](https://github.com/bilgi-ship-it/kepenk/issues/20))
 - [x] pre-commit integration ([#21](https://github.com/bilgi-ship-it/kepenk/issues/21))
-- [ ] MCP proxy adapter
-- [ ] documented compatibility contract for integrations
+- [x] MCP policy-gate adapter ([#29](https://github.com/bilgi-ship-it/kepenk/issues/29))
+- [ ] documented compatibility contract for integrations ([#30](https://github.com/bilgi-ship-it/kepenk/issues/30))
 
 ## v0.3 — Maintainer workflows
 

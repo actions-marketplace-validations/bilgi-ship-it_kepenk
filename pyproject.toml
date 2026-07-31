@@ -29,12 +29,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+mcp = [
+  "mcp>=2,<3",
+]
 dev = [
   "pytest>=8.3,<9",
   "jsonschema>=4.23,<5",
   "ruff>=0.9,<1",
   "mypy>=1.14,<2",
   "pre-commit>=4,<5",
+  "mcp>=2,<3",
   "types-PyYAML>=6.0.12",
 ]
 release = [
@@ -45,6 +49,7 @@ release = [
 [project.scripts]
 kepenk = "kepenk.cli:main"
 kepenk-pre-commit = "kepenk.pre_commit:main"
+kepenk-mcp = "kepenk.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/bilgi-ship-it/kepenk"
