@@ -34,7 +34,7 @@ A valid manifest exits `0`. Missing, malformed, unsupported, private-host-shaped
 | `maintainer_url` | Public HTTPS maintainer profile or identity page |
 | `maintainer_consent` | Must be literal `true` |
 | `integration` | `github_action`, `pre_commit`, `cli`, `jsonl`, `mcp`, or `other` |
-| `kepenk_version` | Tagged semantic version such as `v0.3.0` |
+| `kepenk_version` | Tagged semantic version such as `v0.4.0` |
 | `evidence_url` | Public HTTPS URL inside the declared repository |
 | `verified_on` | Valid `YYYY-MM-DD` date |
 
@@ -56,7 +56,7 @@ The public Ustaca AI founding-team pilot is represented in [`examples/adoption/u
   "maintainer_url": "https://github.com/bilgi-ship-it",
   "maintainer_consent": true,
   "integration": "github_action",
-  "kepenk_version": "v0.3.0",
+  "kepenk_version": "v0.4.0",
   "evidence_url": "https://github.com/bilgi-ship-it/ustaca-ai/tree/main/.kepenk",
   "verified_on": "2026-07-31"
 }
@@ -68,6 +68,8 @@ Validate the checked-in example:
 kepenk validate-adoption \
   --evidence examples/adoption/ustaca-ai.json
 ```
+
+The same manifest is checked into the [public Ustaca AI repository](https://github.com/bilgi-ship-it/ustaca-ai/blob/main/.kepenk/adoption.json) and validated in its [Kepenk policy workflow](https://github.com/bilgi-ship-it/ustaca-ai/actions/runs/30642673639). This remains founding-team evidence rather than independent adoption.
 
 ## Independent adopter workflow
 
