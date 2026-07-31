@@ -4,6 +4,10 @@ All notable changes will be documented here.
 
 ## [Unreleased]
 
+_No unreleased changes yet._
+
+## [0.3.0] - 2026-07-31
+
 ### Added
 
 - declarative version-1 policy test suites and the `kepenk test` command
@@ -13,6 +17,13 @@ All notable changes will be documented here.
 - deterministic `kepenk export-sarif` conversion from verified audit chains, with optional approval warnings and stdout or selected-file output
 - Ed25519 key generation plus version-1 signed approval receipt creation and local verification
 - versioned JSON Schema and documented threat model for portable approval receipts
+- public maintainer response targets, issue-triage practice, review expectations, release cadence, and measurement rules
+
+### Changed
+
+- the runtime now includes the `cryptography` dependency for Ed25519 receipt signing and verification
+- README and adoption guidance now use the verified `v0.3.0` release
+- roadmap and compatibility documentation describe the completed v0.3 maintainer workflow surfaces
 
 ### Security
 
