@@ -20,19 +20,22 @@ A reusable [case-study outline](docs/case-study-template.md) and [adopter pull-r
 
 ## Current main
 
-The v0.3 development line includes declarative policy regression tests and explicit repository-scoped policy context.
+The v0.3 development line includes declarative policy regression tests, explicit repository-scoped policy context, and privacy-safe SARIF reporting from verified audit chains.
 
 A versioned suite records representative actions together with the expected effect and rule identifier. Test evaluation does not launch the proposed action and does not add test results to the production audit chain.
 
 The optional `repository` action field and `repository_glob` matcher let callers distinguish repositories without Kepenk probing the current directory or Git remotes. Repository context is caller-provided policy data, not authentication.
 
-See the [policy-testing guide](docs/policy-testing.md), [repository-context guide](docs/repository-context.md), [example suite](examples/tests/python-development.tests.yaml), and [versioned schema](schemas/kepenk-tests-v1.schema.json).
+`kepenk export-sarif` converts denied audit decisions to SARIF 2.1.0 after verifying every hash link. Approval-required decisions are optional warnings. Command text, host, repository context, metadata, timestamps, and hashes are omitted from the report.
+
+See the [policy-testing guide](docs/policy-testing.md), [repository-context guide](docs/repository-context.md), [SARIF guide](docs/sarif.md), [example suite](examples/tests/python-development.tests.yaml), and [versioned schema](schemas/kepenk-tests-v1.schema.json).
 
 ## Integration guides
 
 - [Codex integration](docs/integrations/codex.md)
 - [Policy testing](docs/policy-testing.md)
 - [Repository-scoped policy context](docs/repository-context.md)
+- [SARIF audit export](docs/sarif.md)
 - [JSONL protocol](docs/integrations/jsonl-protocol.md)
 - [GitHub Action](docs/integrations/github-action.md)
 - [pre-commit integration](docs/integrations/pre-commit.md)
