@@ -1,0 +1,210 @@
+name: Release v0.4.0
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/release-v0.4.0.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_SHA: bd76b77a5d2c31876cda050c34972b483e3a05ed
+      RELEASE_TAG: v0.4.0
+      RELEASE_VERSION: 0.4.0
+      RELEASE_ISSUE: "72"
+    steps:
+      - name: Check out the verified release commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.RELEASE_SHA }}
+          fetch-depth: 0
+
+      - name: Verify release source and metadata
+        shell: bash
+        run: |
+          actual_sha="$(git rev-parse HEAD)"
+          test "${actual_sha}" = "${RELEASE_SHA}"
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          expected = "0.4.0"
+          project = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]
+          assert project["name"] == "kepenk-gate"
+          assert project["version"] == expected
+          assert "cryptography>=44,<50" in project["dependencies"]
+          assert Path(f"docs/releases/v{expected}.md").is_file()
+          assert Path("schemas/kepenk-adoption-evidence-v1.schema.json").is_file()
+          assert Path("examples/adoption/ustaca-ai.json").is_file()
+          assert Path("docs/adoption-evidence.md").is_file()
+          readme = Path("README.md").read_text(encoding="utf-8")
+          assert f"/releases/tag/v{expected}" in readme
+          assert f"/archive/refs/tags/v{expected}.zip" in readme
+          evidence = Path("docs/project-evidence.md").read_text(encoding="utf-8")
+          assert "verified independent adopters: **0**" in evidence
+          assert "recorded outside contributors: **0**" in evidence
+          print(f"verified release source: kepenk-gate=={expected}")
+          PY
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install verification dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,release]"
+
+      - name: Verify source and integration contracts
+        run: |
+          ruff check .
+          mypy src/kepenk
+          pytest
+          kepenk --policy examples/policies/python-development.yaml test \
+            --tests examples/tests/python-development.tests.yaml
+          kepenk validate-adoption --evidence examples/adoption/ustaca-ai.json --json
+          python scripts/run_safety_demos.py
+          pre-commit validate-manifest .pre-commit-hooks.yaml
+          pre-commit validate-config .pre-commit-config.yaml
+          pre-commit run kepenk-validate-local --all-files
+          python scripts/validate_policy_examples.py
+
+      - name: Build and verify distributions
+        run: python scripts/verify_release_artifacts.py
+
+      - name: Inspect release tag
+        id: tag
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "exists=true" >> "${GITHUB_OUTPUT}"
+            remote_sha="$(git ls-remote --tags origin "refs/tags/${RELEASE_TAG}^{}" | awk '{print $1}')"
+            if [[ -z "${remote_sha}" ]]; then
+              remote_sha="$(git ls-remote --tags origin "refs/tags/${RELEASE_TAG}" | awk '{print $1}')"
+            fi
+            test "${remote_sha}" = "${RELEASE_SHA}"
+          else
+            echo "exists=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Create and push annotated tag
+        if: steps.tag.outputs.exists != 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${RELEASE_TAG}" "${RELEASE_SHA}" -m "Kepenk ${RELEASE_TAG}"
+          git push origin "refs/tags/${RELEASE_TAG}"
+
+      - name: Ensure GitHub Release exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "GitHub Release ${RELEASE_TAG} already exists."
+          else
+            gh release create "${RELEASE_TAG}" dist/* \
+              --repo "${GITHUB_REPOSITORY}" \
+              --title "Kepenk ${RELEASE_TAG}" \
+              --notes-file "docs/releases/${RELEASE_TAG}.md" \
+              --verify-tag
+          fi
+
+      - name: Upload missing verified artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+          for artifact in dist/*; do
+            name="$(basename "${artifact}")"
+            if ! printf '%s\n' "${existing}" | grep -Fxq "${name}"; then
+              gh release upload "${RELEASE_TAG}" "${artifact}" --repo "${GITHUB_REPOSITORY}"
+            fi
+          done
+
+      - name: Download and verify published artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          asset_dir="$(mktemp -d)"
+          gh release download "${RELEASE_TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --dir "${asset_dir}" \
+            --pattern "kepenk_gate-${RELEASE_VERSION}-py3-none-any.whl" \
+            --pattern "kepenk_gate-${RELEASE_VERSION}.tar.gz"
+
+          verify_artifact() {
+            artifact="$1"
+            environment="$(mktemp -d)/venv"
+            workspace="$(mktemp -d)"
+            python -m venv "${environment}"
+            source "${environment}/bin/activate"
+            python -m pip install --disable-pip-version-check "${artifact}"
+            python - <<'PY'
+          from importlib.metadata import version
+          import cryptography
+
+          assert version("kepenk-gate") == "0.4.0"
+          assert cryptography.__version__
+          print("verified installed metadata: kepenk-gate==0.4.0")
+          PY
+            kepenk --help
+            kepenk test --help
+            kepenk export-sarif --help
+            kepenk validate-adoption --help
+            kepenk generate-receipt-key --help
+            kepenk create-receipt --help
+            kepenk verify-receipt --help
+            kepenk-pre-commit --help
+            kepenk-mcp --help
+            cat > "${workspace}/adoption.json" <<'JSON'
+          {
+            "version": 1,
+            "classification": "founding_team_pilot",
+            "repository": "bilgi-ship-it/ustaca-ai",
+            "repository_url": "https://github.com/bilgi-ship-it/ustaca-ai",
+            "maintainer": "bilgi-ship-it",
+            "maintainer_url": "https://github.com/bilgi-ship-it",
+            "maintainer_consent": true,
+            "integration": "github_action",
+            "kepenk_version": "v0.4.0",
+            "evidence_url": "https://github.com/bilgi-ship-it/ustaca-ai/tree/main/.kepenk",
+            "verified_on": "2026-07-31"
+          }
+          JSON
+            kepenk validate-adoption --evidence "${workspace}/adoption.json" --json
+            deactivate
+          }
+
+          verify_artifact "${asset_dir}/kepenk_gate-${RELEASE_VERSION}-py3-none-any.whl"
+          verify_artifact "${asset_dir}/kepenk_gate-${RELEASE_VERSION}.tar.gz"
+
+      - name: Record verified release completion
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          release_url="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json url --jq '.url')"
+          assets="$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name')"
+          printf '%s\n' "${assets}" | grep -Fxq "kepenk_gate-${RELEASE_VERSION}-py3-none-any.whl"
+          printf '%s\n' "${assets}" | grep -Fxq "kepenk_gate-${RELEASE_VERSION}.tar.gz"
+
+          gh issue comment "${RELEASE_ISSUE}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --body "GitHub Release **${RELEASE_TAG}** verified successfully. The annotated tag resolves to \`${RELEASE_SHA}\`; both published artifacts were downloaded, installed in clean environments, and passed metadata, command-entry-point, and offline adoption-manifest verification: ${release_url}\n\nPublic PyPI publication remains separate and was not performed."
+
+          state="$(gh issue view "${RELEASE_ISSUE}" --repo "${GITHUB_REPOSITORY}" --json state --jq '.state')"
+          if [[ "${state}" == "OPEN" ]]; then
+            gh issue close "${RELEASE_ISSUE}" --repo "${GITHUB_REPOSITORY}" --reason completed
+          fi
