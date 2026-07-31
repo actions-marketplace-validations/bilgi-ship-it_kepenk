@@ -30,7 +30,7 @@ def test_readme_and_contributing_surface_external_entry_points() -> None:
     assert "good first issue" in quickstart
     assert "help wanted" in quickstart
     assert "Draft pull requests are welcome" in contributing
-    assert "not a sandbox" in readme
+    assert "rather than a sandbox" in readme
 
 
 def test_public_evidence_keeps_ownership_counts_separate() -> None:
