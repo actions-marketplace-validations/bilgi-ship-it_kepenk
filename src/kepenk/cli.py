@@ -53,6 +53,10 @@ def _parser() -> argparse.ArgumentParser:
 
     run = sub.add_parser("run", help="Evaluate and execute a command")
     run.add_argument("--yes", action="store_true", help="Grant required approval non-interactively")
+    run.add_argument(
+        "--repository",
+        help="Explicit repository or workspace context; never auto-detected",
+    )
     run.add_argument("command", nargs=argparse.REMAINDER, help="Command after --")
 
     sub.add_parser(
@@ -70,6 +74,10 @@ def _add_action_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--command")
     parser.add_argument("--path")
     parser.add_argument("--host")
+    parser.add_argument(
+        "--repository",
+        help="Explicit repository or workspace context; never auto-detected",
+    )
     parser.add_argument(
         "--metadata",
         action="append",
@@ -194,6 +202,7 @@ def main(argv: list[str] | None = None) -> int:
                 command=args.command,
                 path=args.path,
                 host=args.host,
+                repository=args.repository,
                 metadata=_metadata(args.metadata),
             )
             decision = engine.evaluate(action)
@@ -223,7 +232,11 @@ def main(argv: list[str] | None = None) -> int:
                 command = command[1:]
             if not command:
                 parser.error("kepenk run requires a command after --")
-            action = Action(type="shell", command=display_command(command))
+            action = Action(
+                type="shell",
+                command=display_command(command),
+                repository=args.repository,
+            )
             decision = engine.evaluate(action)
             _print_decision(decision)
             if decision.denied:
