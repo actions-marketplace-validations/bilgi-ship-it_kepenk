@@ -16,6 +16,8 @@ The [adoption guide](docs/adoption.md) reaches a first policy decision in five s
 
 Public integrations may be submitted to the consent-based [adopter registry](ADOPTERS.md). Independent adopters and founding-team pilots are recorded separately. Every listed project needs a public repository and a public integration permalink.
 
+The v0.4 development line adds an experimental, telemetrisiz [offline adoption-evidence manifest](docs/adoption-evidence.md). `kepenk validate-adoption` checks the local JSON structure without fetching URLs or proving ownership. The [versioned schema](schemas/kepenk-adoption-evidence-v1.schema.json) and [Ustaca AI example](examples/adoption/ustaca-ai.json) are public; registry inclusion still requires human review and maintainer consent.
+
 A reusable [case-study outline](docs/case-study-template.md), [adopter pull-request template](.github/PULL_REQUEST_TEMPLATE/adopter.md), and [reproducible Ustaca AI founding-team case study](docs/case-studies/ustaca-ai.md) are available. The founding-team case study is public integration evidence, not independent adoption.
 
 ## Contribute or become the first independent adopter
@@ -52,6 +54,7 @@ See the [policy-testing guide](docs/policy-testing.md), [repository-context guid
 - [Repository-scoped policy context](docs/repository-context.md)
 - [SARIF audit export](docs/sarif.md)
 - [Signed approval receipts](docs/approval-receipts.md)
+- [Offline adoption evidence](docs/adoption-evidence.md)
 - [JSONL protocol](docs/integrations/jsonl-protocol.md)
 - [GitHub Action](docs/integrations/github-action.md)
 - [pre-commit integration](docs/integrations/pre-commit.md)
@@ -73,6 +76,7 @@ Current maintainer ownership, response targets, review practice, release cadence
 - [Contributor quickstart](docs/contributor-quickstart.md)
 - [Public project evidence](docs/project-evidence.md)
 - [Adoption guide](docs/adoption.md)
+- [Offline adoption evidence](docs/adoption-evidence.md)
 - [Adopter registry](ADOPTERS.md)
 - [Ustaca AI case study](docs/case-studies/ustaca-ai.md)
 - [Maintainer policy](MAINTAINERS.md)
