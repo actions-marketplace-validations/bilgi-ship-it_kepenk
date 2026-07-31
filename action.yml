@@ -1,0 +1,80 @@
+name: Kepenk Policy Gate
+description: Validate a Kepenk policy or evaluate an explicit agent action.
+author: Ustaca
+
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  mode:
+    description: validate or check
+    required: false
+    default: validate
+  policy:
+    description: Policy path relative to the repository workspace
+    required: false
+    default: kepenk.yaml
+  action_type:
+    description: Structured action type used in check mode
+    required: false
+    default: shell
+  command:
+    description: Exact command string used in check mode
+    required: false
+    default: ""
+  path:
+    description: Optional path used in check mode
+    required: false
+    default: ""
+  host:
+    description: Optional host used in check mode
+    required: false
+    default: ""
+  metadata_json:
+    description: Optional JSON object used as action metadata
+    required: false
+    default: "{}"
+
+outputs:
+  valid:
+    description: Whether the policy loaded successfully
+    value: ${{ steps.kepenk.outputs.valid }}
+  effect:
+    description: allow, approval, or deny in check mode
+    value: ${{ steps.kepenk.outputs.effect }}
+  rule_id:
+    description: Matched rule identifier, if any
+    value: ${{ steps.kepenk.outputs.rule_id }}
+  reason:
+    description: Decision or validation reason
+    value: ${{ steps.kepenk.outputs.reason }}
+  rule_count:
+    description: Number of rules in the loaded policy
+    value: ${{ steps.kepenk.outputs.rule_count }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: "3.11"
+        cache: pip
+
+    - name: Install Kepenk
+      shell: bash
+      run: python -m pip install --disable-pip-version-check "$GITHUB_ACTION_PATH"
+
+    - name: Evaluate Kepenk policy
+      id: kepenk
+      shell: bash
+      env:
+        KEPENK_ACTION_MODE: ${{ inputs.mode }}
+        KEPENK_ACTION_POLICY: ${{ inputs.policy }}
+        KEPENK_ACTION_TYPE: ${{ inputs.action_type }}
+        KEPENK_ACTION_COMMAND: ${{ inputs.command }}
+        KEPENK_ACTION_PATH_VALUE: ${{ inputs.path }}
+        KEPENK_ACTION_HOST: ${{ inputs.host }}
+        KEPENK_ACTION_METADATA_JSON: ${{ inputs.metadata_json }}
+      run: python -m kepenk.github_action

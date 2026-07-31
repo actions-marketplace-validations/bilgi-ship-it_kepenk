@@ -117,6 +117,7 @@ See [ROADMAP.md](ROADMAP.md) for planned adapters and integrations.
 ## Integrations
 
 - [Codex integration](docs/integrations/codex.md): non-interactive `check`, `run`, and explicit `approve` workflow with a sample policy and `AGENTS.md`.
+- [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
 
 ## Security
 

@@ -1,0 +1,40 @@
+name: Kepenk policy example
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - action.yml
+      - src/kepenk/github_action.py
+      - examples/codex/kepenk.yaml
+      - .github/workflows/kepenk-policy.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Validate example policy
+        uses: ./
+        with:
+          mode: validate
+          policy: examples/codex/kepenk.yaml
+
+      - name: Check a read-only command
+        id: check
+        uses: ./
+        with:
+          mode: check
+          policy: examples/codex/kepenk.yaml
+          action_type: shell
+          command: git status --short
+
+      - name: Verify decision output
+        shell: bash
+        env:
+          EFFECT: ${{ steps.check.outputs.effect }}
+        run: test "$EFFECT" = "allow"
