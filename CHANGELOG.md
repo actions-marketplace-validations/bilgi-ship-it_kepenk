@@ -9,6 +9,12 @@ All notable changes will be documented here.
 - declarative version-1 policy test suites and the `kepenk test` command
 - public adopter onboarding, evidence registry, case-study outline, and submission template
 - first disclosed founding-team pilot in the public Ustaca AI repository
+- explicit caller-provided `repository` action context and the additive policy v1 `repository_glob` matcher across CLI, JSONL, GitHub Action, MCP, and policy test suites
+
+### Security
+
+- repository context is never inferred from the filesystem or Git configuration and is documented as caller-provided policy data rather than authentication
+- missing repository context does not match `repository_glob` and therefore falls through to later rules or the policy default
 
 ## [0.2.1] - 2026-07-31
 
