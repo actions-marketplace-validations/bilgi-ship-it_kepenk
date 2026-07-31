@@ -12,10 +12,11 @@ The form does not publish a numeric minimum for stars or downloads. Kepenk can b
 
 - primary maintainer: `bilgi-ship-it`;
 - public Apache-2.0 repository;
-- four tagged GitHub releases through verified `v0.3.0`;
+- five tagged GitHub releases through verified `v0.4.0`;
 - Ubuntu and Windows CI on Python 3.11 and 3.13;
 - public security, compatibility, maintenance and release processes;
 - CLI, JSONL, GitHub Action, pre-commit and MCP surfaces;
+- telemetry-free offline adoption-evidence validation;
 - one reproducible founding-team public pilot;
 - zero verified independent adopters;
 - zero recorded outside contributors;
@@ -45,7 +46,7 @@ The repository must remain public.
 
 Maximum allowed: 500 characters. Current draft: 366 characters.
 
-> Kepenk is an Apache-2.0, provider-neutral safety gate for AI coding agents. It gives maintainers deterministic allow/approval/deny policy checks, tamper-evident audit logs, SARIF export, signed approval receipts, and CI/MCP integrations. The project has four tagged releases, cross-platform CI, public maintenance/security processes, and a reproducible public pilot.
+> Kepenk is an Apache-2.0, provider-neutral safety gate for AI coding agents. It gives maintainers deterministic allow/approval/deny policy checks, tamper-evident audit logs, SARIF export, signed approval receipts, and CI/MCP integrations. The project has five tagged releases, cross-platform CI, public maintenance/security processes, and a reproducible public pilot.
 
 ### Requested support
 
@@ -92,6 +93,6 @@ Immediately before submission:
 
 ## Decision record
 
-Submitting now is defensible because the project has a clear maintainer-workflow purpose, active maintenance evidence, four verified releases, cross-platform quality controls and a public reproducible integration.
+Submitting now is defensible because the project has a clear maintainer-workflow purpose, active maintenance evidence, five verified releases, cross-platform quality controls and a public reproducible integration.
 
 Waiting for one independent adopter or reviewed outside contribution would improve the usage and community evidence. Neither outcome should be fabricated, purchased, or represented by another founding-team repository.
