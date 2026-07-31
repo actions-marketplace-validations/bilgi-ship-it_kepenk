@@ -9,7 +9,7 @@ From the repository you want to protect:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.1.zip"
+python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.3.0.zip"
 kepenk init
 kepenk check --action shell --command "python -m pytest"
 ```
@@ -34,7 +34,7 @@ Use the managed hook when policy files should be validated before they reach CI.
 
 ### GitHub Actions
 
-Use the repository action to validate a policy or evaluate an explicit action in CI. Pin the verified `v0.2.1` tag or an exact reviewed commit. See [the GitHub Action guide](integrations/github-action.md).
+Use the repository action to validate a policy or evaluate an explicit action in CI. Pin the verified `v0.3.0` tag or an exact reviewed commit. See [the GitHub Action guide](integrations/github-action.md).
 
 ### JSONL or MCP
 
@@ -42,7 +42,7 @@ Use the JSONL protocol for a long-running local process. Use the MCP adapter for
 
 ## Add policy regression tests
 
-The current main branch includes `kepenk test`, which compares representative actions with expected effects and rule IDs:
+Kepenk v0.3.0 includes `kepenk test`, which compares representative actions with expected effects and rule IDs:
 
 ```bash
 kepenk --policy kepenk.yaml test --tests kepenk.tests.yaml
@@ -58,7 +58,7 @@ Before requesting a registry entry, confirm that:
 - the Kepenk integration is visible at a stable public URL;
 - the policy validates successfully;
 - representative allow, approval, deny, and default behavior are checked;
-- no credentials, private logs, or proprietary source are included;
+- no credentials, private logs, private keys, signed production receipts, or proprietary source are included;
 - the repository documentation states that Kepenk is a policy layer rather than a sandbox;
 - the maintainer agrees to be listed in `ADOPTERS.md`.
 
