@@ -117,7 +117,26 @@ The published hook keeps:
 
 The default filename regular expression may be extended. Repositories using unusual names should continue to set their own `files` expression.
 
-## Experimental surface
+## Experimental surfaces
+
+### Declarative policy test suites
+
+The `kepenk test` command and policy test-suite format version `1` are experimental while the v0.3 line is developed.
+
+The current interface is:
+
+- `kepenk --policy POLICY test [--tests SUITE] [--json]`;
+- default suite path `kepenk.tests.yaml`;
+- top-level suite fields `version` and `cases`;
+- case fields `id`, `action`, and `expect`;
+- action fields `type`, `command`, `path`, `host`, and `metadata`;
+- expectation fields `effect` and `rule_id`, including explicit `null` for a default decision;
+- exit code `0` when every case passes, `1` for expectation mismatches, and `64` for an invalid policy or suite;
+- JSON result fields `version`, `ok`, `total`, `passed`, `failed`, and `cases`.
+
+The command evaluates decisions only. It does not execute test actions and does not append test results to the policy audit chain. The format is protected against incompatible patch-release changes, but may receive documented changes in a later minor v0.x release before it is promoted to the stable section.
+
+The versioned schema is `schemas/kepenk-tests-v1.schema.json`.
 
 ### MCP adapter
 
