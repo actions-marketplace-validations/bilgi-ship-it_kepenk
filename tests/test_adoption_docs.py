@@ -9,13 +9,16 @@ def _read(path: str) -> str:
     return (ROOT / path).read_text(encoding="utf-8")
 
 
-def test_adopter_registry_starts_honestly_empty() -> None:
+def test_adopter_registry_separates_independent_and_founding_team_projects() -> None:
     registry = _read("ADOPTERS.md")
 
     assert "## Independent adopters" in registry
     assert "## Founding-team pilots" in registry
     assert "No verified independent adopters are listed yet" in registry
-    assert "No public founding-team pilot is listed yet" in registry
+    assert "bilgi-ship-it/ustaca-ai" in registry
+    assert "Pinned GitHub Action and repository policy" in registry
+    assert "2026-07-31" in registry
+    assert "do not count as independent adoption" in registry
     assert "| Repository | Evidence | Integration | Maintainer | Verified |" in registry
     assert "Stars, forks, downloads" in registry
 
