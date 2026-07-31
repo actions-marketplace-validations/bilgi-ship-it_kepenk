@@ -8,21 +8,22 @@ This document keeps application, outreach, and adoption claims tied to public ev
 
 - Repository: [`bilgi-ship-it/kepenk`](https://github.com/bilgi-ship-it/kepenk)
 - License: Apache-2.0
-- Current verified release: [`v0.3.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.3.0)
+- Current verified release: [`v0.4.0`](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.4.0)
 - Maintainer: [`@bilgi-ship-it`](https://github.com/bilgi-ship-it)
 - Package name: `kepenk-gate`
 - Positioning: provider-neutral, local-first approval and audit gate for AI coding agents
 
 ## Tagged release history
 
-Four tagged GitHub releases are publicly recorded:
+Five tagged GitHub releases are publicly recorded:
 
 1. `v0.1.0` — deterministic policy gate, safe runner, audit chain, CLI, schema, Codex and GitHub Action foundations;
 2. `v0.2.0` — JSONL, policy packs, demonstrations, pre-commit, MCP and compatibility contract;
 3. `v0.2.1` — GitHub Action portability fix for non-Python consumer repositories;
-4. `v0.3.0` — policy regression suites, repository context, SARIF export and Ed25519 approval receipts.
+4. `v0.3.0` — policy regression suites, repository context, SARIF export and Ed25519 approval receipts;
+5. `v0.4.0` — offline adoption-evidence validation, reproducible pilot evidence, contributor onboarding, and public application evidence controls.
 
-The v0.3.0 annotated tag resolves to the verified release source commit. Published wheel and source distributions were downloaded from the GitHub Release, installed into clean environments, and smoke-tested before the release issue was closed.
+The v0.4.0 annotated tag resolves to the verified release source commit. Published wheel and source distributions were downloaded from the GitHub Release, installed into clean environments, and smoke-tested before the release issue was closed.
 
 ## Active maintenance evidence
 
@@ -46,7 +47,8 @@ Kepenk addresses repeatable open-source maintenance tasks:
 - gate shell, Git, package, release and infrastructure workflows;
 - expose decisions through CLI, JSONL, GitHub Actions, pre-commit and MCP;
 - export redacted denied decisions to SARIF;
-- create and verify short-lived signed approval receipts without executing the action.
+- create and verify short-lived signed approval receipts without executing the action;
+- validate a local adoption-evidence manifest without telemetry or network access.
 
 Kepenk is a policy layer, not a sandbox. Its documentation consistently keeps operating-system isolation, credentials, protected workflows and code review inside the surrounding security boundary.
 
@@ -76,6 +78,8 @@ The first two are documentation-focused `good first issue` tasks. The third star
 ## Metrics policy
 
 Kepenk does not include telemetry or automatic user counting. Stars, forks, downloads, installations, contributors and adopter counts must be read from public sources at the time of use. Do not substitute goals, repository views, founding-team use or unverified mentions for independent adoption.
+
+The v0.4.0 adoption-evidence manifest is also telemetry free. Local structural validation does not contact the declared repository, attest ownership, verify identity, count adoption, or approve registry inclusion.
 
 ## OpenAI Codex for Open Source readiness
 
