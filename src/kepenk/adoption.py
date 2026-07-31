@@ -169,7 +169,9 @@ def _maintainer(value: Any) -> str:
 def _kepenk_version(value: Any) -> str:
     rendered = _non_empty_string(value, "kepenk_version", maximum=100)
     if not _VERSION_PATTERN.fullmatch(rendered):
-        raise AdoptionEvidenceError("kepenk_version must be a tagged semantic version such as v0.3.0")
+        raise AdoptionEvidenceError(
+            "kepenk_version must be a tagged semantic version such as v0.3.0"
+        )
     return rendered
 
 
