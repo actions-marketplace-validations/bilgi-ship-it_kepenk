@@ -56,13 +56,14 @@ Use an absolute policy path because MCP hosts may launch the server from a diffe
   "command": "git push origin main",
   "path": null,
   "host": null,
-  "metadata": {
-    "repository": "example/project"
-  }
+  "repository": "example/project",
+  "metadata": {}
 }
 ```
 
-Only `type` is required. `command`, `path`, and `host` may be strings or null. `metadata` must be an object.
+Only `type` is required. `command`, `path`, `host`, and `repository` may be strings or null. `metadata` must be an object.
+
+Use the dedicated `repository` field with policy `repository_glob` matchers. Kepenk does not inspect the MCP host's working directory or Git configuration to populate it. The field is caller-provided policy context, not authentication.
 
 ## Tool result
 
@@ -82,9 +83,8 @@ A valid request returns the full deterministic decision envelope:
       "command": "git push origin main",
       "path": null,
       "host": null,
-      "metadata": {
-        "repository": "example/project"
-      }
+      "repository": "example/project",
+      "metadata": {}
     }
   }
 }
@@ -115,7 +115,9 @@ The MCP server is a decision service, not a sandbox or command proxy. The MCP ho
 - stop when the effect is `deny`;
 - stop on every structured error, transport failure, timeout, or malformed response.
 
-Do not grant the MCP server credentials or filesystem access that it does not need. Keep the policy and audit path repository-scoped, and combine Kepenk with least-privilege credentials, protected branches, isolated runners, and operating-system controls.
+Do not grant the MCP server credentials or filesystem access that it does not need. Keep the policy and audit path repository-scoped, supply repository context only from a trusted caller, and combine Kepenk with least-privilege credentials, protected branches, isolated runners, and operating-system controls.
+
+See the [repository-context guide](../repository-context.md) for examples and trust boundaries.
 
 ## Development verification
 
@@ -124,4 +126,4 @@ pytest tests/test_mcp_server.py
 kepenk-mcp --help
 ```
 
-The test suite exercises allow, approval, deny, invalid input, audit logging, tool discovery, and an in-memory MCP tool call.
+The test suite exercises allow, approval, deny, invalid input, audit logging, tool discovery, repository context, and an in-memory MCP tool call.
