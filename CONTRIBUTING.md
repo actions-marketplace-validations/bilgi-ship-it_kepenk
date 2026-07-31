@@ -18,14 +18,31 @@ pytest
 ## Commit and PR guidance
 
 - Use focused commits.
-- Describe the threat model or failure mode addressed.
-- Call out policy-format changes explicitly.
-- Do not include secrets, production logs, or proprietary Ustaca code.
+- Describe the failure mode or workflow problem addressed.
+- Call out policy-format and machine-facing changes explicitly.
+- Do not include credentials, private logs, or proprietary source.
+- Keep claims tied to reproducible repository evidence.
+
+## Adopter registry contributions
+
+Public adopter entries follow a separate evidence process:
+
+1. Read [the adoption guide](docs/adoption.md).
+2. Add one row to the correct section of [`ADOPTERS.md`](ADOPTERS.md).
+3. Link to a public repository and a stable public integration permalink.
+4. Use [the adopter pull-request template](.github/PULL_REQUEST_TEMPLATE/adopter.md).
+5. Confirm that the repository maintainer agrees to the listing.
+6. Classify founding-team pilots separately from independent adopters.
+
+An adopter entry may be removed when the listed maintainer asks, the evidence link disappears, or the linked repository no longer shows Kepenk use.
+
+A registry entry records visible integration evidence. It is not a certification, partnership, or endorsement.
 
 ## Good first contributions
 
-- additional policy examples
-- Windows/PowerShell command patterns
+- additional policy examples and policy test suites
+- Windows and PowerShell command patterns
 - documentation improvements
 - clearer validation errors
+- onboarding examples for public repositories
 - fuzz and property tests for rule matching
