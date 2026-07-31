@@ -4,9 +4,9 @@
 
 Kepenk evaluates structured actions against a local policy and returns `allow`, `approval`, or `deny`. It is provider-neutral, local-first, and intended for coding agents, command-line automation, continuous integration, and open-source maintainer workflows.
 
-The current verified public release is [v0.2.0](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.2.0). Kepenk remains early alpha and pre-1.0. See the [v0.x compatibility contract](docs/compatibility-v0.md) for the machine-facing surfaces covered during this period.
+The current verified public release is [v0.2.1](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.2.1). Kepenk remains early alpha and pre-1.0. See the [v0.x compatibility contract](docs/compatibility-v0.md) for the machine-facing surfaces covered during this period.
 
-Verified source archive: https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.0.zip
+Verified source archive: https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.1.zip
 
 Kepenk is a policy and approval layer rather than a sandbox. Use it with suitable operating-system isolation, limited credentials, protected branches, and normal software supply-chain controls.
 
