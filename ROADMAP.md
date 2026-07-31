@@ -22,7 +22,7 @@ Kepenk follows a GitHub-first release strategy. Public PyPI publication is usefu
 
 The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate from other tools.
 
-- [ ] structured stdin/stdout protocol ([#18](https://github.com/bilgi-ship-it/kepenk/issues/18))
+- [x] structured stdin/stdout protocol ([#18](https://github.com/bilgi-ship-it/kepenk/issues/18))
 - [ ] at least 10 real-world policy packs ([#19](https://github.com/bilgi-ship-it/kepenk/issues/19))
 - [ ] three reproducible agent-safety demos ([#20](https://github.com/bilgi-ship-it/kepenk/issues/20))
 - [ ] pre-commit integration ([#21](https://github.com/bilgi-ship-it/kepenk/issues/21))

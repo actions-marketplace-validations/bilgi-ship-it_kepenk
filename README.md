@@ -113,13 +113,14 @@ kepenk init [--force]
 kepenk validate [--json]
 kepenk check --action TYPE [--command TEXT] [--path PATH] [--host HOST] [--json]
 kepenk run [--yes] -- COMMAND [ARG ...]
+kepenk protocol
 kepenk verify-audit [--audit PATH]
 ```
 
 Exit codes:
 
 - `0`: allowed, approved, or command completed successfully
-- `64`: invalid configuration or CLI input
+- `64`: invalid configuration, CLI input, or JSONL protocol request
 - `75`: human approval was required but not granted
 - `77`: denied by policy
 - other: child process exit code
@@ -136,6 +137,7 @@ Exit codes:
 ## Integrations
 
 - [Codex integration](docs/integrations/codex.md): non-interactive `check` and `run` workflows with a sample policy and `AGENTS.md`.
+- [JSONL agent protocol](docs/integrations/jsonl-protocol.md): a versioned, long-running stdin/stdout interface for agents and automation tools.
 - [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
 - [PowerShell examples](docs/powershell.md): Windows-specific quoting, command matching, and policy limitations.
 

@@ -11,6 +11,7 @@ from .engine import PolicyEngine
 from .errors import KepenkError
 from .models import Action, Decision
 from .policy import load_policy
+from .protocol import run_protocol
 from .runner import display_command, run_command
 
 EXIT_USAGE = 64
@@ -43,6 +44,11 @@ def _parser() -> argparse.ArgumentParser:
     run = sub.add_parser("run", help="Evaluate and execute a command")
     run.add_argument("--yes", action="store_true", help="Grant required approval non-interactively")
     run.add_argument("command", nargs=argparse.REMAINDER, help="Command after --")
+
+    sub.add_parser(
+        "protocol",
+        help="Read versioned JSONL action requests from stdin and write decisions to stdout",
+    )
 
     verify = sub.add_parser("verify-audit", help="Verify the audit hash chain")
     verify.add_argument("--audit", help="Audit path; defaults to policy audit.path")
@@ -154,6 +160,9 @@ def main(argv: list[str] | None = None) -> int:
             if decision.requires_approval:
                 return EXIT_APPROVAL_NOT_GRANTED
             return 0
+
+        if args.subcommand == "protocol":
+            return run_protocol(engine, audit_path, sys.stdin, sys.stdout)
 
         if args.subcommand == "verify-audit":
             selected_path = args.audit or audit_path
