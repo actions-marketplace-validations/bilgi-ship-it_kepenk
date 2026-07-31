@@ -1,0 +1,9 @@
+- id: kepenk-validate
+  name: Kepenk policy validation
+  description: Fail closed when a changed Kepenk policy is missing, malformed, or unsupported.
+  entry: kepenk-pre-commit
+  language: python
+  language_version: python3
+  types: [yaml]
+  files: '(^|/)(kepenk(?:\.[^/]+)?|[^/]+\.kepenk)\.ya?ml$|(^|/)\.kepenk/.*\.ya?ml$'
+  require_serial: true

@@ -34,6 +34,7 @@ dev = [
   "jsonschema>=4.23,<5",
   "ruff>=0.9,<1",
   "mypy>=1.14,<2",
+  "pre-commit>=4,<5",
   "types-PyYAML>=6.0.12",
 ]
 release = [
@@ -43,6 +44,7 @@ release = [
 
 [project.scripts]
 kepenk = "kepenk.cli:main"
+kepenk-pre-commit = "kepenk.pre_commit:main"
 
 [project.urls]
 Homepage = "https://github.com/bilgi-ship-it/kepenk"

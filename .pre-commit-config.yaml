@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: kepenk-validate-local
+        name: Validate Kepenk policy examples
+        entry: kepenk-pre-commit
+        language: system
+        types: [yaml]
+        files: '(^kepenk\.example\.ya?ml$|^examples/(?:policies|demos)/.*\.ya?ml$)'
+        require_serial: true

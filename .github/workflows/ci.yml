@@ -29,6 +29,9 @@ jobs:
       - run: mypy src/kepenk
       - run: pytest
       - run: python scripts/run_safety_demos.py
+      - run: pre-commit validate-manifest .pre-commit-hooks.yaml
+      - run: pre-commit validate-config .pre-commit-config.yaml
+      - run: pre-commit run kepenk-validate-local --all-files
 
   package:
     runs-on: ubuntu-latest

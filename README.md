@@ -168,6 +168,7 @@ Exit codes:
 - [Codex integration](docs/integrations/codex.md): non-interactive `check` and `run` workflows with a sample policy and `AGENTS.md`.
 - [JSONL agent protocol](docs/integrations/jsonl-protocol.md): a versioned, long-running stdin/stdout interface for agents and automation tools.
 - [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
+- [pre-commit hook](docs/integrations/pre-commit.md): reject invalid policy files before a commit reaches CI.
 - [PowerShell examples](docs/powershell.md): Windows-specific quoting, command matching, and policy limitations.
 
 ## Current v0.2 priorities
@@ -175,7 +176,7 @@ Exit codes:
 - [x] [Structured stdin/stdout protocol](https://github.com/bilgi-ship-it/kepenk/issues/18)
 - [x] [Real-world policy packs](https://github.com/bilgi-ship-it/kepenk/issues/19)
 - [x] [Reproducible agent-safety demos](https://github.com/bilgi-ship-it/kepenk/issues/20)
-- [ ] [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
+- [x] [Pre-commit integration](https://github.com/bilgi-ship-it/kepenk/issues/21)
 
 See [ROADMAP.md](ROADMAP.md) for the full plan.
 
