@@ -9,7 +9,7 @@ From the repository you want to protect:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.0.zip"
+python -m pip install "https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.1.zip"
 kepenk init
 kepenk check --action shell --command "python -m pytest"
 ```
@@ -34,7 +34,7 @@ Use the managed hook when policy files should be validated before they reach CI.
 
 ### GitHub Actions
 
-Use the repository action to validate a policy or evaluate an explicit action in CI. Pin a verified tag or commit. See [the GitHub Action guide](integrations/github-action.md).
+Use the repository action to validate a policy or evaluate an explicit action in CI. Pin the verified `v0.2.1` tag or an exact reviewed commit. See [the GitHub Action guide](integrations/github-action.md).
 
 ### JSONL or MCP
 
