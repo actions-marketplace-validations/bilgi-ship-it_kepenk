@@ -31,7 +31,7 @@ from kepenk.protocol import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-STABLE_ACTION_KEYS = {"type", "command", "path", "host", "metadata"}
+STABLE_ACTION_KEYS = {"type", "command", "path", "host", "repository", "metadata"}
 STABLE_DECISION_KEYS = {"effect", "reason", "rule_id", "action"}
 
 
@@ -82,6 +82,7 @@ def test_policy_v1_schema_contract() -> None:
         "command_contains",
         "path_glob",
         "host_glob",
+        "repository_glob",
         "metadata",
     }.issubset(schema["$defs"]["match"]["properties"])
 
@@ -91,8 +92,17 @@ def test_cli_commands_json_shape_and_exit_code_contract() -> None:
     samples = {
         "init": ["init"],
         "validate": ["validate", "--json"],
-        "check": ["check", "--action", "shell", "--command", "git status", "--json"],
-        "run": ["run", "--", "python", "-V"],
+        "check": [
+            "check",
+            "--action",
+            "shell",
+            "--command",
+            "git status",
+            "--repository",
+            "example/project",
+            "--json",
+        ],
+        "run": ["run", "--repository", "example/project", "--", "python", "-V"],
         "protocol": ["protocol"],
         "verify-audit": ["verify-audit", "--audit", "audit.jsonl"],
     }
@@ -106,10 +116,15 @@ def test_cli_commands_json_shape_and_exit_code_contract() -> None:
         effect="allow",
         reason="read only",
         rule_id="allow-status",
-        action=Action(type="shell", command="git status"),
+        action=Action(
+            type="shell",
+            command="git status",
+            repository="example/project",
+        ),
     ).to_dict()
     assert STABLE_DECISION_KEYS.issubset(payload)
     assert STABLE_ACTION_KEYS.issubset(payload["action"])
+    assert payload["action"]["repository"] == "example/project"
 
 
 def test_jsonl_protocol_success_and_error_contract(tmp_path: Path) -> None:
@@ -122,7 +137,12 @@ def test_jsonl_protocol_success_and_error_contract(tmp_path: Path) -> None:
         {
             "version": 1,
             "id": 7,
-            "action": {"type": "shell", "command": "git status", "metadata": {}},
+            "action": {
+                "type": "shell",
+                "command": "git status",
+                "repository": "example/project",
+                "metadata": {},
+            },
         },
     )
     assert PROTOCOL_VERSION == 1
@@ -131,6 +151,7 @@ def test_jsonl_protocol_success_and_error_contract(tmp_path: Path) -> None:
     assert response["ok"] is True
     assert STABLE_DECISION_KEYS.issubset(response["decision"])
     assert STABLE_ACTION_KEYS.issubset(response["decision"]["action"])
+    assert response["decision"]["action"]["repository"] == "example/project"
 
     output = io.StringIO()
     code = run_protocol(
@@ -168,6 +189,7 @@ def test_github_action_input_output_and_exit_code_contract() -> None:
         "command",
         "path",
         "host",
+        "repository",
         "metadata_json",
     }.issubset(action["inputs"])
     assert {"valid", "effect", "rule_id", "reason", "rule_count"}.issubset(
@@ -175,6 +197,7 @@ def test_github_action_input_output_and_exit_code_contract() -> None:
     )
     assert action["inputs"]["mode"]["default"] == "validate"
     assert action["inputs"]["policy"]["default"] == "kepenk.yaml"
+    assert action["inputs"]["repository"]["default"] == ""
     assert (ACTION_EXIT_USAGE, ACTION_EXIT_APPROVAL, ACTION_EXIT_DENIED) == (64, 75, 77)
 
 
@@ -195,6 +218,7 @@ def test_mcp_tool_name_input_and_result_contract(tmp_path: Path) -> None:
             tools = await client.list_tools()
             tool = next(item for item in tools.tools if item.name == "kepenk_check_action")
             assert tool.name == "kepenk_check_action"
+            assert "repository" in tool.input_schema["properties"]
 
             result = await client.call_tool(
                 "kepenk_check_action",
@@ -203,7 +227,8 @@ def test_mcp_tool_name_input_and_result_contract(tmp_path: Path) -> None:
                     "command": "git status",
                     "path": None,
                     "host": None,
-                    "metadata": {"repository": "example/project"},
+                    "repository": "example/project",
+                    "metadata": {},
                 },
             )
             assert result.structured_content is not None
@@ -212,5 +237,6 @@ def test_mcp_tool_name_input_and_result_contract(tmp_path: Path) -> None:
             assert payload["ok"] is True
             assert STABLE_DECISION_KEYS.issubset(payload["decision"])
             assert STABLE_ACTION_KEYS.issubset(payload["decision"]["action"])
+            assert payload["decision"]["action"]["repository"] == "example/project"
 
     asyncio.run(exercise())
