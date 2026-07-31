@@ -4,14 +4,29 @@ All notable changes will be documented here.
 
 ## [Unreleased]
 
+_No unreleased changes yet._
+
+## [0.4.0] - 2026-07-31
+
 ### Added
 
 - versioned offline adoption-evidence manifest, local `kepenk validate-adoption` command, JSON Schema, public example, and fail-closed validation tests
+- reproducible Ustaca AI founding-team case study linked to public policy, regression-suite, workflow, pull-request, and successful CI evidence
+- ten-minute external contributor quickstart and visible `good first issue`, `help wanted`, and independent-adopter entry points
+- dated public project-evidence snapshot that keeps founding-team pilots, independent adopters, and outside contributors as separate counts
+- form-ready Codex for Open Source application package with regression-tested 500-character answers and private-field boundaries
+
+### Changed
+
+- README and adoption guidance now use the verified `v0.4.0` release and document the offline evidence workflow
+- roadmap records the completed evidence-manifest work while leaving independent-adoption, outside-contributor, CI-provider, and OpenTelemetry targets open
 
 ### Security
 
 - adoption evidence validation performs no network requests or telemetry, rejects unknown and duplicate fields, requires explicit maintainer consent, and rejects credential-bearing, local, private-network, query-bearing, fragment-bearing, and inconsistent evidence URLs
 - structural validation does not claim repository ownership, maintainer identity, URL availability, production security, or independent adoption; registry inclusion remains subject to human review
+- application and project-evidence documents keep applicant email, OpenAI Organization ID, credentials, billing data, and other private account details out of the public repository
+- founding-team usage remains explicitly separated from independent adoption and outside contribution
 
 ## [0.3.0] - 2026-07-31
 

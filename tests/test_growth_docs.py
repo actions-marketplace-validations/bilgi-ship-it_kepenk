@@ -36,7 +36,7 @@ def test_readme_and_contributing_surface_external_entry_points() -> None:
 def test_public_evidence_keeps_ownership_counts_separate() -> None:
     evidence = _read("docs/project-evidence.md")
 
-    assert "Four tagged GitHub releases" in evidence
+    assert "Five tagged GitHub releases" in evidence
     assert "verified founding-team pilots: **1**" in evidence
     assert "verified independent adopters: **0**" in evidence
     assert "recorded outside contributors: **0**" in evidence
