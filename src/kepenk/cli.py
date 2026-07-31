@@ -11,9 +11,11 @@ from .engine import PolicyEngine
 from .errors import KepenkError
 from .models import Action, Decision
 from .policy import load_policy
+from .policy_tests import evaluate_policy_test_suite, load_policy_test_suite
 from .protocol import run_protocol
 from .runner import display_command, run_command
 
+EXIT_TEST_FAILED = 1
 EXIT_USAGE = 64
 EXIT_APPROVAL_NOT_GRANTED = 75
 EXIT_DENIED = 77
@@ -36,6 +38,14 @@ def _parser() -> argparse.ArgumentParser:
 
     validate = sub.add_parser("validate", help="Validate a policy file and exit")
     validate.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    test = sub.add_parser("test", help="Run declarative policy decision tests")
+    test.add_argument(
+        "--tests",
+        default="kepenk.tests.yaml",
+        help="Policy test suite path (default: kepenk.tests.yaml)",
+    )
+    test.add_argument("--json", action="store_true", help="Print machine-readable JSON")
 
     check = sub.add_parser("check", help="Evaluate an action without executing it")
     _add_action_arguments(check)
@@ -116,6 +126,37 @@ def _confirm(decision: Decision) -> bool:
     return answer in {"y", "yes"}
 
 
+def _run_policy_tests(engine: PolicyEngine, tests_path: str, as_json: bool) -> int:
+    suite = load_policy_test_suite(tests_path)
+    results = evaluate_policy_test_suite(engine, suite)
+    passed = sum(result.passed for result in results)
+    failed = len(results) - passed
+
+    if as_json:
+        payload = {
+            "version": suite.version,
+            "ok": failed == 0,
+            "total": len(results),
+            "passed": passed,
+            "failed": failed,
+            "cases": [result.to_dict() for result in results],
+        }
+        print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    else:
+        for result in results:
+            status = "PASS" if result.passed else "FAIL"
+            expected_rule = result.case.expected.rule_id or "<default>"
+            actual_rule = result.decision.rule_id or "<default>"
+            print(
+                f"{status} {result.case.id}: "
+                f"expected {result.case.expected.effect} via {expected_rule}; "
+                f"got {result.decision.effect} via {actual_rule}"
+            )
+        print(f"policy tests: {passed} passed, {failed} failed, {len(results)} total")
+
+    return 0 if failed == 0 else EXIT_TEST_FAILED
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = _parser()
     args = parser.parse_args(argv)
@@ -143,6 +184,9 @@ def main(argv: list[str] | None = None) -> int:
                     f"{payload['rules']} rules, default={payload['default']}"
                 )
             return 0
+
+        if args.subcommand == "test":
+            return _run_policy_tests(engine, args.tests, args.json)
 
         if args.subcommand == "check":
             action = Action(

@@ -33,14 +33,15 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 ## v0.3 — Maintainer workflows
 
 - [x] policy packs for release and package publishing
-- [ ] repository-scoped approvals
-- [ ] signed approval receipts
-- [ ] audit export in SARIF format
+- [x] declarative policy test suites for expected decisions ([#37](https://github.com/bilgi-ship-it/kepenk/issues/37))
+- [ ] repository-scoped approval contexts ([#39](https://github.com/bilgi-ship-it/kepenk/issues/39))
+- [ ] signed approval receipts ([#40](https://github.com/bilgi-ship-it/kepenk/issues/40))
+- [ ] audit export in SARIF format ([#41](https://github.com/bilgi-ship-it/kepenk/issues/41))
 - [ ] OpenTelemetry-compatible audit export
-- [ ] policy test command for expected allow / approval / deny cases
 
 ## v0.4 — Adoption and ecosystem evidence
 
+- [ ] adopter onboarding kit and public evidence registry ([#38](https://github.com/bilgi-ship-it/kepenk/issues/38))
 - [ ] at least three independent repositories using Kepenk
 - [ ] at least two contributors outside the founding team
 - [ ] documented maintainer response and release cadence
