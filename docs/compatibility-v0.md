@@ -34,10 +34,12 @@ The following are stable:
 - effects `allow`, `approval`, and `deny`;
 - top-level fields `default`, `audit`, and `rules`;
 - rule fields `id`, `effect`, `reason`, and `match`;
-- match keys `action`, `command_regex`, `command_contains`, `path_glob`, `host_glob`, and `metadata`;
+- match keys `action`, `command_regex`, `command_contains`, `path_glob`, `host_glob`, `repository_glob`, and `metadata`;
 - first matching rule wins;
 - the default effect is `approval` when omitted;
 - malformed or unsupported policies fail closed.
+
+`repository_glob` matches only the explicit caller-provided `repository` action field. Kepenk does not infer repository context from the filesystem, current directory, Git configuration, remotes, package metadata, or a hosting provider. Missing context does not match a repository matcher.
 
 New optional keys or matchers may be added. A breaking policy-format change requires a new integer version and a migration document. The versioned JSON Schema remains at `schemas/kepenk-policy-v1.schema.json`.
 
@@ -47,8 +49,8 @@ The installed command remains `kepenk`. The following subcommands and machine-re
 
 - `init [--force]`;
 - `validate [--json]`;
-- `check --action TYPE [--command TEXT] [--path PATH] [--host HOST] [--metadata KEY=VALUE] [--json]`;
-- `run [--yes] -- COMMAND ...`;
+- `check --action TYPE [--command TEXT] [--path PATH] [--host HOST] [--repository VALUE] [--metadata KEY=VALUE] [--json]`;
+- `run [--yes] [--repository VALUE] -- COMMAND ...`;
 - `protocol`;
 - `verify-audit [--audit PATH]`.
 
@@ -60,7 +62,7 @@ The documented exit codes are stable:
 - `77`: denied by policy;
 - for `kepenk run`, another positive value may be the executed child process exit code.
 
-For `check --json`, the stable decision keys are `effect`, `reason`, `rule_id`, and `action`. The action keys are `type`, `command`, `path`, `host`, and `metadata`. Human-readable wording is not stable.
+For `check --json`, the stable decision keys are `effect`, `reason`, `rule_id`, and `action`. The action keys are `type`, `command`, `path`, `host`, `repository`, and `metadata`. Human-readable wording is not stable.
 
 ### JSONL protocol version 1
 
@@ -68,7 +70,7 @@ Each non-empty input line is one JSON object containing:
 
 - `version`, currently integer `1`;
 - optional `id`, which may be a string, integer, or null;
-- `action`, with `type` plus optional `command`, `path`, `host`, and `metadata`.
+- `action`, with `type` plus optional `command`, `path`, `host`, `repository`, and `metadata`.
 
 Successful output contains exactly the required envelope fields `version`, `id`, `ok`, and `decision`. The decision uses the stable CLI decision shape.
 
@@ -92,6 +94,7 @@ Stable inputs:
 - `command`;
 - `path`;
 - `host`;
+- `repository`;
 - `metadata_json`.
 
 Stable outputs:
@@ -129,7 +132,7 @@ The current interface is:
 - default suite path `kepenk.tests.yaml`;
 - top-level suite fields `version` and `cases`;
 - case fields `id`, `action`, and `expect`;
-- action fields `type`, `command`, `path`, `host`, and `metadata`;
+- action fields `type`, `command`, `path`, `host`, `repository`, and `metadata`;
 - expectation fields `effect` and `rule_id`, including explicit `null` for a default decision;
 - exit code `0` when every case passes, `1` for expectation mismatches, and `64` for an invalid policy or suite;
 - JSON result fields `version`, `ok`, `total`, `passed`, `failed`, and `cases`.
@@ -145,12 +148,18 @@ The local command `kepenk-mcp` and tool name `kepenk_check_action` are experimen
 The adapter currently:
 
 - runs over local MCP stdio;
-- accepts `type`, `command`, `path`, `host`, and `metadata`;
+- accepts `type`, `command`, `path`, `host`, `repository`, and `metadata`;
 - returns the JSONL decision or structured error envelope;
 - records valid decisions in the configured audit chain;
 - never executes the proposed action.
 
 The tool name, core input field names, and fail-closed meaning will not change in a patch release. MCP SDK-specific representation details may change in a minor release with migration notes. The calling MCP host remains responsible for enforcing `allow`, `approval`, `deny`, transport failures, and structured errors.
+
+## Repository-context security boundary
+
+The `repository` field is caller-provided policy context. It is not authentication, repository attestation, proof of checkout identity, or authorization by itself. Callers that can select the value can misrepresent it. High-risk integrations should supply it from a trusted wrapper or protected workflow and combine Kepenk with normal credential, branch, runner, and operating-system controls.
+
+See `docs/repository-context.md` for examples and migration guidance.
 
 ## Deprecation and migration policy
 
