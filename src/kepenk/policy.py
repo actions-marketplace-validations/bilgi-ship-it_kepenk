@@ -15,6 +15,7 @@ VALID_MATCH_KEYS: set[str] = {
     "command_contains",
     "path_glob",
     "host_glob",
+    "repository_glob",
     "metadata",
 }
 
