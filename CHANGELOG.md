@@ -11,12 +11,18 @@ All notable changes will be documented here.
 - first disclosed founding-team pilot in the public Ustaca AI repository
 - explicit caller-provided `repository` action context and the additive policy v1 `repository_glob` matcher across CLI, JSONL, GitHub Action, MCP, and policy test suites
 - deterministic `kepenk export-sarif` conversion from verified audit chains, with optional approval warnings and stdout or selected-file output
+- Ed25519 key generation plus version-1 signed approval receipt creation and local verification
+- versioned JSON Schema and documented threat model for portable approval receipts
 
 ### Security
 
 - repository context is never inferred from the filesystem or Git configuration and is documented as caller-provided policy data rather than authentication
 - missing repository context does not match `repository_glob` and therefore falls through to later rules or the policy default
 - SARIF export refuses invalid or malformed audit events and omits command text, host, repository context, metadata, timestamps, hashes, and unsafe paths
+- approval receipts bind the exact structured action, current approval decision, semantic policy digest, Ed25519 key ID, nonce, issuance time, and expiry
+- receipt generation refuses `allow` and `deny`; receipt verification reevaluates the current policy and cannot override a current deny decision
+- private keys are accepted only from explicit unencrypted PKCS8 PEM files and are never embedded in receipts, audit logs, policies, metadata, or CLI output
+- receipt creation and verification never execute the proposed action or append signing material to the audit chain
 
 ## [0.2.1] - 2026-07-31
 

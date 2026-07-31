@@ -13,6 +13,17 @@ from .models import Action, Decision
 from .policy import load_policy
 from .policy_tests import evaluate_policy_test_suite, load_policy_test_suite
 from .protocol import run_protocol
+from .receipts import (
+    DEFAULT_RECEIPT_LIFETIME_SECONDS,
+    create_approval_receipt,
+    generate_receipt_key_pair,
+    load_receipt,
+    load_receipt_private_key,
+    load_receipt_public_key,
+    render_receipt,
+    verify_approval_receipt,
+    write_receipt,
+)
 from .runner import display_command, run_command
 from .sarif import write_sarif
 
@@ -79,6 +90,62 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Include approval-required decisions as warning results",
     )
+
+    keygen = sub.add_parser(
+        "generate-receipt-key",
+        help="Generate an Ed25519 approval receipt key pair",
+    )
+    keygen.add_argument("--private-key", required=True, help="Private PKCS8 PEM output path")
+    keygen.add_argument("--public-key", required=True, help="Public SPKI PEM output path")
+    keygen.add_argument("--force", action="store_true", help="Overwrite existing key files")
+
+    create_receipt = sub.add_parser(
+        "create-receipt",
+        help="Sign one approval decision without executing the action",
+    )
+    _add_action_arguments(create_receipt)
+    create_receipt.add_argument(
+        "--private-key",
+        required=True,
+        help="Ed25519 private PKCS8 PEM path",
+    )
+    create_receipt.add_argument(
+        "--nonce",
+        required=True,
+        help="Trusted replay context or unique request identifier",
+    )
+    create_receipt.add_argument(
+        "--expires-in",
+        type=int,
+        default=DEFAULT_RECEIPT_LIFETIME_SECONDS,
+        help=(
+            "Receipt lifetime in seconds "
+            f"(default: {DEFAULT_RECEIPT_LIFETIME_SECONDS})"
+        ),
+    )
+    create_receipt.add_argument("--output", help="Write receipt JSON to this file")
+    create_receipt.add_argument(
+        "--force",
+        action="store_true",
+        help="Overwrite an existing receipt output file",
+    )
+
+    verify_receipt = sub.add_parser(
+        "verify-receipt",
+        help="Verify one approval receipt without executing the action",
+    )
+    _add_action_arguments(verify_receipt)
+    verify_receipt.add_argument("--receipt", required=True, help="Receipt JSON path")
+    verify_receipt.add_argument(
+        "--public-key",
+        required=True,
+        help="Expected Ed25519 public SPKI PEM path",
+    )
+    verify_receipt.add_argument(
+        "--nonce",
+        required=True,
+        help="Expected replay context or unique request identifier",
+    )
     return parser
 
 
@@ -110,6 +177,17 @@ def _metadata(items: list[str]) -> dict[str, str]:
             raise ValueError("metadata key must not be empty")
         result[key] = value
     return result
+
+
+def _action_from_args(args: argparse.Namespace) -> Action:
+    return Action(
+        type=args.action,
+        command=args.command,
+        path=args.path,
+        host=args.host,
+        repository=args.repository,
+        metadata=_metadata(args.metadata),
+    )
 
 
 def _print_decision(decision: Decision, as_json: bool = False) -> None:
@@ -187,6 +265,27 @@ def main(argv: list[str] | None = None) -> int:
         if args.subcommand == "init":
             return _init_policy(policy_path, args.force)
 
+        if args.subcommand == "generate-receipt-key":
+            key_id = generate_receipt_key_pair(
+                args.private_key,
+                args.public_key,
+                force=args.force,
+            )
+            print(
+                json.dumps(
+                    {
+                        "created": True,
+                        "algorithm": "Ed25519",
+                        "key_id": key_id,
+                        "private_key": args.private_key,
+                        "public_key": args.public_key,
+                    },
+                    ensure_ascii=False,
+                    sort_keys=True,
+                )
+            )
+            return 0
+
         engine, audit_path = _load_engine(str(policy_path))
 
         if args.subcommand == "validate":
@@ -210,14 +309,7 @@ def main(argv: list[str] | None = None) -> int:
             return _run_policy_tests(engine, args.tests, args.json)
 
         if args.subcommand == "check":
-            action = Action(
-                type=args.action,
-                command=args.command,
-                path=args.path,
-                host=args.host,
-                repository=args.repository,
-                metadata=_metadata(args.metadata),
-            )
+            action = _action_from_args(args)
             decision = engine.evaluate(action)
             append_decision(audit_path, decision, outcome="checked")
             _print_decision(decision, args.json)
@@ -248,6 +340,36 @@ def main(argv: list[str] | None = None) -> int:
             )
             if args.output is None:
                 sys.stdout.write(rendered)
+            return 0
+
+        if args.subcommand == "create-receipt":
+            action = _action_from_args(args)
+            private_key = load_receipt_private_key(args.private_key)
+            receipt = create_approval_receipt(
+                engine.policy,
+                action,
+                private_key,
+                nonce=args.nonce,
+                expires_in=args.expires_in,
+            )
+            if args.output:
+                write_receipt(receipt, args.output, force=args.force)
+            else:
+                sys.stdout.write(render_receipt(receipt))
+            return 0
+
+        if args.subcommand == "verify-receipt":
+            action = _action_from_args(args)
+            receipt = load_receipt(args.receipt)
+            public_key = load_receipt_public_key(args.public_key)
+            result = verify_approval_receipt(
+                receipt,
+                engine.policy,
+                action,
+                public_key,
+                nonce=args.nonce,
+            )
+            print(json.dumps(result, ensure_ascii=False, sort_keys=True))
             return 0
 
         if args.subcommand == "run":
