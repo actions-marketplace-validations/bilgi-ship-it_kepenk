@@ -166,7 +166,7 @@ jobs:
           verify_artifact "${wheel}"
           verify_artifact "${sdist}"
 
-      - name: Verify release and close issue
+      - name: Record verified release completion
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -176,7 +176,13 @@ jobs:
           printf '%s\n' "${assets}" | grep -Fxq "kepenk_gate-${RELEASE_VERSION}-py3-none-any.whl"
           printf '%s\n' "${assets}" | grep -Fxq "kepenk_gate-${RELEASE_VERSION}.tar.gz"
 
-          gh issue close "${RELEASE_ISSUE}" \
+          gh issue comment "${RELEASE_ISSUE}" \
             --repo "${GITHUB_REPOSITORY}" \
-            --reason completed \
-            --comment "GitHub Release **${RELEASE_TAG}** verified successfully. The annotated tag resolves to \`${RELEASE_SHA}\`; the attached wheel and source distribution were downloaded, installed in clean environments, and passed metadata plus all three command-entry-point smoke tests: ${release_url}\n\nPublic PyPI publication remains separate and was not performed by this workflow."
+            --body "GitHub Release **${RELEASE_TAG}** verified successfully. The annotated tag resolves to \`${RELEASE_SHA}\`; the attached wheel and source distribution were downloaded from the published release, installed in clean environments, and passed metadata plus all three command-entry-point smoke tests: ${release_url}\n\nVerified assets:\n- \`kepenk_gate-${RELEASE_VERSION}-py3-none-any.whl\`\n- \`kepenk_gate-${RELEASE_VERSION}.tar.gz\`\n\nPublic PyPI publication remains separate and was not performed by this workflow."
+
+          issue_state="$(gh issue view "${RELEASE_ISSUE}" --repo "${GITHUB_REPOSITORY}" --json state --jq '.state')"
+          if [[ "${issue_state}" == "OPEN" ]]; then
+            gh issue close "${RELEASE_ISSUE}" --repo "${GITHUB_REPOSITORY}" --reason completed
+          else
+            echo "Issue #${RELEASE_ISSUE} is already closed."
+          fi
