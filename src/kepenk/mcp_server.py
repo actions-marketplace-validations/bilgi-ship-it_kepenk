@@ -31,6 +31,7 @@ def evaluate_mcp_action(
     command: str | None = None,
     path: str | None = None,
     host: str | None = None,
+    repository: str | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Evaluate one structured MCP tool request without executing it."""
@@ -42,6 +43,7 @@ def evaluate_mcp_action(
             "command": command,
             "path": path,
             "host": host,
+            "repository": repository,
             "metadata": metadata or {},
         },
     }
@@ -72,6 +74,7 @@ def create_mcp_server(policy_path: str | Path = "kepenk.yaml") -> Any:
         command: str | None = None,
         path: str | None = None,
         host: str | None = None,
+        repository: str | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Check a proposed agent action. This tool never executes the action."""
@@ -82,6 +85,7 @@ def create_mcp_server(policy_path: str | Path = "kepenk.yaml") -> Any:
             command=command,
             path=path,
             host=host,
+            repository=repository,
             metadata=metadata,
         )
 
