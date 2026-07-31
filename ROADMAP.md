@@ -43,6 +43,7 @@ Kepenk follows a GitHub-first release strategy. Public PyPI publication is usefu
 - [x] adopter onboarding kit and public evidence registry ([#38](https://github.com/bilgi-ship-it/kepenk/issues/38))
 - [x] first reproducible founding-team pilot case study ([#63](https://github.com/bilgi-ship-it/kepenk/issues/63))
 - [x] versioned offline adoption-evidence manifest and local validator ([#70](https://github.com/bilgi-ship-it/kepenk/issues/70))
+- [x] tagged `v0.4.0` GitHub Release with verified wheel and source distribution ([#72](https://github.com/bilgi-ship-it/kepenk/issues/72))
 - [ ] at least three independent repositories using Kepenk
 - [ ] at least two contributors outside the founding team
 - [x] documented maintainer response and release cadence ([#55](https://github.com/bilgi-ship-it/kepenk/issues/55))
