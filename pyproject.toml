@@ -36,6 +36,10 @@ dev = [
   "mypy>=1.14,<2",
   "types-PyYAML>=6.0.12",
 ]
+release = [
+  "build>=1.2,<2",
+  "twine>=6,<7",
+]
 
 [project.scripts]
 kepenk = "kepenk.cli:main"

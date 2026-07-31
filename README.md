@@ -119,6 +119,10 @@ See [ROADMAP.md](ROADMAP.md) for planned adapters and integrations.
 - [Codex integration](docs/integrations/codex.md): non-interactive `check`, `run`, and explicit `approve` workflow with a sample policy and `AGENTS.md`.
 - [GitHub Action](docs/integrations/github-action.md): validate policies and check explicit actions with job summaries and reusable outputs.
 
+## Releasing
+
+See [docs/releasing.md](docs/releasing.md) for the reproducible wheel/sdist verification process and first-release checklist.
+
 ## Security
 
 Read [SECURITY.md](SECURITY.md) before production use. Report vulnerabilities privately.
