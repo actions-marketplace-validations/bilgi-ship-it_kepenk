@@ -33,6 +33,9 @@ def _parser() -> argparse.ArgumentParser:
     init = sub.add_parser("init", help="Create a conservative starter policy")
     init.add_argument("--force", action="store_true", help="Overwrite an existing policy")
 
+    validate = sub.add_parser("validate", help="Validate a policy file and exit")
+    validate.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
     check = sub.add_parser("check", help="Evaluate an action without executing it")
     _add_action_arguments(check)
     check.add_argument("--json", action="store_true", help="Print machine-readable JSON")
@@ -117,6 +120,23 @@ def main(argv: list[str] | None = None) -> int:
             return _init_policy(policy_path, args.force)
 
         engine, audit_path = _load_engine(str(policy_path))
+
+        if args.subcommand == "validate":
+            payload = {
+                "valid": True,
+                "version": engine.policy.version,
+                "default": engine.policy.default,
+                "rules": len(engine.policy.rules),
+                "audit_path": audit_path,
+            }
+            if args.json:
+                print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+            else:
+                print(
+                    f"valid policy: version {payload['version']}, "
+                    f"{payload['rules']} rules, default={payload['default']}"
+                )
+            return 0
 
         if args.subcommand == "check":
             action = Action(

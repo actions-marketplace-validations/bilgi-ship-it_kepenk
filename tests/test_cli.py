@@ -37,3 +37,19 @@ def test_check_exit_codes(tmp_path: Path) -> None:
     assert main([*prefix, "rm -rf x"]) == EXIT_DENIED
     assert main([*prefix, "echo hi"]) == EXIT_APPROVAL_NOT_GRANTED
     assert main([*prefix, "python -V"]) == 0
+
+
+def test_validate_policy(tmp_path: Path, capsys) -> None:
+    policy = _write_policy(tmp_path)
+
+    assert main(["--policy", str(policy), "validate"]) == 0
+    assert "valid policy: version 1" in capsys.readouterr().out
+
+
+def test_validate_policy_json(tmp_path: Path, capsys) -> None:
+    policy = _write_policy(tmp_path)
+
+    assert main(["--policy", str(policy), "validate", "--json"]) == 0
+    output = capsys.readouterr().out
+    assert '"valid": true' in output
+    assert '"rules": 2' in output
