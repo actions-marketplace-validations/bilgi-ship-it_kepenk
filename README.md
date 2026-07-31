@@ -4,9 +4,9 @@
 
 Kepenk evaluates structured actions against a local policy and returns `allow`, `approval`, or `deny`. It is provider-neutral, local-first, and intended for coding agents, command-line automation, continuous integration, and open-source maintainer workflows.
 
-The current verified public release is [v0.2.1](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.2.1). Kepenk remains early alpha and pre-1.0. See the [v0.x compatibility contract](docs/compatibility-v0.md) for the machine-facing surfaces covered during this period.
+The current verified public release is [v0.3.0](https://github.com/bilgi-ship-it/kepenk/releases/tag/v0.3.0). Kepenk remains early alpha and pre-1.0. See the [v0.x compatibility contract](docs/compatibility-v0.md) for the machine-facing surfaces covered during this period.
 
-Verified source archive: https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.2.1.zip
+Verified source archive: https://github.com/bilgi-ship-it/kepenk/archive/refs/tags/v0.3.0.zip
 
 Kepenk is a policy and approval layer rather than a sandbox. Use it with suitable operating-system isolation, limited credentials, protected branches, and normal software supply-chain controls.
 
@@ -18,9 +18,9 @@ Public integrations may be submitted to the consent-based [adopter registry](ADO
 
 A reusable [case-study outline](docs/case-study-template.md) and [adopter pull-request template](.github/PULL_REQUEST_TEMPLATE/adopter.md) are available for maintainers who choose to share their integration.
 
-## Current main
+## v0.3 release highlights
 
-The v0.3 development line includes declarative policy regression tests, explicit repository-scoped policy context, privacy-safe SARIF reporting, and Ed25519-signed approval receipts.
+Kepenk v0.3.0 adds declarative policy regression tests, explicit repository-scoped policy context, privacy-safe SARIF reporting, and Ed25519-signed approval receipts.
 
 A versioned suite records representative actions together with the expected effect and rule identifier. Test evaluation does not launch the proposed action and does not add test results to the production audit chain.
 
