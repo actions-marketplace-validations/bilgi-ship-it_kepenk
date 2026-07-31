@@ -1,0 +1,149 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PUBLISH-v0.1.0 to publish the verified release
+        required: true
+        type: string
+
+jobs:
+  guard:
+    name: Confirm release intent
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require exact confirmation
+        env:
+          CONFIRMATION: ${{ inputs.confirm }}
+        shell: bash
+        run: |
+          if [[ "${CONFIRMATION}" != "PUBLISH-v0.1.0" ]]; then
+            echo "Exact confirmation PUBLISH-v0.1.0 is required."
+            exit 1
+          fi
+
+  build:
+    name: Rebuild verified distributions
+    needs: guard
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_SHA: 6739a651a1a09363be0c9f4cce469861688e65b1
+      RELEASE_TAG: v0.1.0
+    steps:
+      - name: Check out the immutable release tag
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+          fetch-depth: 0
+
+      - name: Verify tag target
+        shell: bash
+        run: |
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "${actual_sha}" != "${RELEASE_SHA}" ]]; then
+            echo "Release tag points to ${actual_sha}, expected ${RELEASE_SHA}."
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install verification dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,release]"
+
+      - name: Refuse duplicate public version
+        run: python scripts/check_pypi_state.py --json
+
+      - name: Verify source and distributions
+        run: |
+          ruff check .
+          mypy src/kepenk
+          pytest
+          python scripts/verify_release_artifacts.py
+
+      - name: Upload immutable distributions for publishing
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pypi-dists-v0.1.0
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish verified distributions
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/kepenk-gate
+    permissions:
+      id-token: write
+    steps:
+      - name: Download verified distributions
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: pypi-dists-v0.1.0
+          path: dist/
+
+      - name: Publish to PyPI with Trusted Publishing
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
+
+  verify:
+    name: Verify public installation
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the public package and run smoke tests
+        shell: bash
+        run: |
+          python -m venv /tmp/kepenk-public
+          source /tmp/kepenk-public/bin/activate
+          installed=false
+          for attempt in 1 2 3 4 5 6; do
+            if python -m pip install \
+              --disable-pip-version-check \
+              --no-cache-dir \
+              --index-url https://pypi.org/simple \
+              "kepenk-gate==0.1.0"; then
+              installed=true
+              break
+            fi
+            echo "Public index not ready on attempt ${attempt}; retrying."
+            sleep 10
+          done
+          if [[ "${installed}" != "true" ]]; then
+            echo "Could not install kepenk-gate==0.1.0 from public PyPI."
+            exit 1
+          fi
+          kepenk --help
+          workspace="$(mktemp -d)"
+          cd "${workspace}"
+          kepenk init
+          kepenk validate
+
+      - name: Record successful PyPI publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh issue close 5 \
+            --repo "${GITHUB_REPOSITORY}" \
+            --reason completed \
+            --comment "PyPI publication verified successfully. \`kepenk-gate==0.1.0\` installed from the public index in a clean environment, and the CLI smoke tests passed. Release v0.1.0 is complete."
