@@ -8,7 +8,8 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from kepenk.audit import GENESIS_HASH, _hash_event, append_decision
-from kepenk.cli import EXIT_USAGE, main as cli_main
+from kepenk.cli import EXIT_USAGE
+from kepenk.cli import main as cli_main
 from kepenk.errors import AuditError
 from kepenk.models import Action, Decision
 from kepenk.sarif import SARIF_SCHEMA, SARIF_VERSION, SarifError, build_sarif
