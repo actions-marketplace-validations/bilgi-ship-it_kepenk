@@ -102,6 +102,10 @@
           "$ref": "#/$defs/stringOrStringArray",
           "description": "fnmatch-compatible host glob or globs."
         },
+        "repository_glob": {
+          "$ref": "#/$defs/stringOrStringArray",
+          "description": "fnmatch-compatible glob matched against caller-provided repository or workspace context."
+        },
         "metadata": {
           "type": "object",
           "minProperties": 1,
@@ -141,11 +145,12 @@
       },
       "rules": [
         {
-          "id": "allow-tests",
+          "id": "allow-tests-in-project",
           "effect": "allow",
-          "reason": "Local test commands are low risk.",
+          "reason": "Local test commands are low risk in this repository.",
           "match": {
             "action": "shell",
+            "repository_glob": "example/project",
             "command_regex": "(^|\\s)(pytest|python\\s+-m\\s+pytest)(\\s|$)"
           }
         }
