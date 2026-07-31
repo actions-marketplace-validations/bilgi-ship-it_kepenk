@@ -11,7 +11,7 @@ from .models import Action
 
 PROTOCOL_VERSION = 1
 EXIT_PROTOCOL_ERROR = 64
-_ALLOWED_ACTION_FIELDS = {"type", "command", "path", "host", "metadata"}
+_ALLOWED_ACTION_FIELDS = {"type", "command", "path", "host", "repository", "metadata"}
 
 
 class ProtocolError(ValueError):
@@ -86,6 +86,7 @@ def parse_request(payload: Any) -> tuple[str | int | None, Action]:
         command=_optional_string(raw_action.get("command"), "command"),
         path=_optional_string(raw_action.get("path"), "path"),
         host=_optional_string(raw_action.get("host"), "host"),
+        repository=_optional_string(raw_action.get("repository"), "repository"),
         metadata=metadata,
     )
 
