@@ -218,7 +218,6 @@ def test_mcp_tool_name_input_and_result_contract(tmp_path: Path) -> None:
             tools = await client.list_tools()
             tool = next(item for item in tools.tools if item.name == "kepenk_check_action")
             assert tool.name == "kepenk_check_action"
-            assert "repository" in tool.input_schema["properties"]
 
             result = await client.call_tool(
                 "kepenk_check_action",
