@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -58,6 +59,33 @@ def _artifacts() -> tuple[Path, Path]:
     return wheels[0], source_distributions[0]
 
 
+def _write_adoption_evidence(workspace: Path, expected_version: str) -> Path:
+    evidence = workspace / "adoption.json"
+    evidence.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "classification": "founding_team_pilot",
+                "repository": "bilgi-ship-it/ustaca-ai",
+                "repository_url": "https://github.com/bilgi-ship-it/ustaca-ai",
+                "maintainer": "bilgi-ship-it",
+                "maintainer_url": "https://github.com/bilgi-ship-it",
+                "maintainer_consent": True,
+                "integration": "github_action",
+                "kepenk_version": f"v{expected_version}",
+                "evidence_url": (
+                    "https://github.com/bilgi-ship-it/ustaca-ai/tree/main/.kepenk"
+                ),
+                "verified_on": "2026-07-31",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return evidence
+
+
 def _verify_install(artifact: Path, expected_version: str) -> None:
     with tempfile.TemporaryDirectory(prefix="kepenk-release-") as temporary:
         temporary_path = Path(temporary)
@@ -91,8 +119,14 @@ def _verify_install(artifact: Path, expected_version: str) -> None:
             ]
         )
         _run([kepenk, "--help"])
+        _run([kepenk, "validate-adoption", "--help"])
         _run([pre_commit, "--help"])
         _run([mcp, "--help"])
+        evidence = _write_adoption_evidence(workspace, expected_version)
+        _run(
+            [kepenk, "validate-adoption", "--evidence", evidence, "--json"],
+            cwd=workspace,
+        )
         _run([kepenk, "--policy", "kepenk.yaml", "init"], cwd=workspace)
         _run(
             [
