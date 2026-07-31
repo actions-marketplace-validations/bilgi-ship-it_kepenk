@@ -5,12 +5,14 @@ import json
 import os
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from kepenk.cli import EXIT_USAGE, main as cli_main
+from kepenk.cli import EXIT_USAGE
+from kepenk.cli import main as cli_main
 from kepenk.models import Action
 from kepenk.policy import load_policy
 from kepenk.receipts import (
@@ -30,15 +32,15 @@ from kepenk.receipts import (
 ISSUED_AT = datetime(2026, 7, 31, 12, 0, 0, tzinfo=UTC)
 
 
-def _policy_data(*, push_effect: str = "approval", reason: str = "Push requires approval"):
+def _policy_data(audit_path: Path, *, effect: str = "approval", reason: str = "Push requires approval") -> dict[str, Any]:
     return {
         "version": 1,
         "default": "deny",
-        "audit": {"path": ".kepenk/audit.jsonl"},
+        "audit": {"path": str(audit_path)},
         "rules": [
             {
                 "id": "require-push-approval",
-                "effect": push_effect,
+                "effect": effect,
                 "reason": reason,
                 "match": {
                     "action": "shell",
@@ -50,10 +52,7 @@ def _policy_data(*, push_effect: str = "approval", reason: str = "Push requires 
                 "id": "allow-status",
                 "effect": "allow",
                 "reason": "Status is read only",
-                "match": {
-                    "action": "shell",
-                    "command_regex": r"^git status$",
-                },
+                "match": {"action": "shell", "command_regex": r"^git status$"},
             },
         ],
     }
@@ -63,25 +62,21 @@ def _write_policy(
     tmp_path: Path,
     *,
     name: str = "kepenk.yaml",
-    push_effect: str = "approval",
+    effect: str = "approval",
     reason: str = "Push requires approval",
     formatted: bool = False,
 ) -> Path:
     path = tmp_path / name
-    data = _policy_data(push_effect=push_effect, reason=reason)
+    data = _policy_data(tmp_path / "audit.jsonl", effect=effect, reason=reason)
+    rendered = yaml.safe_dump(data, sort_keys=formatted, indent=4 if formatted else 2)
     if formatted:
-        path.write_text(
-            "# same semantic policy with different formatting\n"
-            + yaml.safe_dump(data, sort_keys=True, indent=4),
-            encoding="utf-8",
-        )
-    else:
-        path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+        rendered = "# semantic formatting change only\n" + rendered
+    path.write_text(rendered, encoding="utf-8")
     return path
 
 
-def _approval_action(**changes) -> Action:
-    values = {
+def _action(**changes: Any) -> Action:
+    values: dict[str, Any] = {
         "type": "shell",
         "command": "git push origin main",
         "path": None,
@@ -93,10 +88,10 @@ def _approval_action(**changes) -> Action:
     return Action(**values)
 
 
-def _create(tmp_path: Path):
+def _bundle(tmp_path: Path):
     policy = load_policy(_write_policy(tmp_path))
     private_key = Ed25519PrivateKey.generate()
-    action = _approval_action()
+    action = _action()
     receipt = create_approval_receipt(
         policy,
         action,
@@ -108,8 +103,8 @@ def _create(tmp_path: Path):
     return policy, private_key, action, receipt
 
 
-def test_valid_receipt_binds_policy_action_decision_time_nonce_and_key(tmp_path: Path) -> None:
-    policy, private_key, action, receipt = _create(tmp_path)
+def test_valid_receipt_binds_all_security_inputs(tmp_path: Path) -> None:
+    policy, private_key, action, receipt = _bundle(tmp_path)
 
     result = verify_approval_receipt(
         receipt,
@@ -133,20 +128,19 @@ def test_valid_receipt_binds_policy_action_decision_time_nonce_and_key(tmp_path:
     assert len(result["receipt_sha256"]) == 64
 
 
-def test_policy_digest_is_semantic_and_detects_policy_mutation(tmp_path: Path) -> None:
-    first = load_policy(_write_policy(tmp_path, name="first.yaml"))
+def test_policy_digest_is_semantic_and_mutation_is_rejected(tmp_path: Path) -> None:
+    original = load_policy(_write_policy(tmp_path, name="original.yaml"))
     same = load_policy(_write_policy(tmp_path, name="same.yaml", formatted=True))
     mutated = load_policy(
         _write_policy(tmp_path, name="mutated.yaml", reason="Changed approval reason")
     )
-
-    assert policy_sha256(first) == policy_sha256(same)
-    assert policy_sha256(first) != policy_sha256(mutated)
+    assert policy_sha256(original) == policy_sha256(same)
+    assert policy_sha256(original) != policy_sha256(mutated)
 
     private_key = Ed25519PrivateKey.generate()
-    action = _approval_action()
+    action = _action()
     receipt = create_approval_receipt(
-        first,
+        original,
         action,
         private_key,
         nonce="policy-mutation",
@@ -164,104 +158,73 @@ def test_policy_digest_is_semantic_and_detects_policy_mutation(tmp_path: Path) -
 
 
 @pytest.mark.parametrize(
-    "mutated_action",
+    "mutated",
     [
-        _approval_action(command="git push origin other"),
-        _approval_action(repository="other/project"),
-        _approval_action(path="src/release.py"),
-        _approval_action(host="git.example.com"),
-        _approval_action(metadata={"workflow": "release", "attempt": 2}),
-        _approval_action(type="deployment"),
+        _action(type="deployment"),
+        _action(command="git push origin other"),
+        _action(path="src/release.py"),
+        _action(host="git.example.com"),
+        _action(repository="other/project"),
+        _action(metadata={"workflow": "release", "attempt": 2}),
     ],
 )
-def test_action_mutation_is_rejected(tmp_path: Path, mutated_action: Action) -> None:
-    policy, private_key, _action, receipt = _create(tmp_path)
-
-    with pytest.raises(ReceiptError, match="structured action|current policy decision"):
+def test_action_mutation_is_rejected(tmp_path: Path, mutated: Action) -> None:
+    policy, private_key, _expected, receipt = _bundle(tmp_path)
+    with pytest.raises(ReceiptError, match="structured action"):
         verify_approval_receipt(
             receipt,
             policy,
-            mutated_action,
+            mutated,
             private_key.public_key(),
             nonce="run-123/action-1",
             now=ISSUED_AT + timedelta(seconds=1),
         )
 
 
-def test_wrong_nonce_wrong_key_expiry_and_future_issuance_fail_closed(tmp_path: Path) -> None:
-    policy, private_key, action, receipt = _create(tmp_path)
+def test_replay_context_wrong_key_expiry_and_future_time_are_rejected(tmp_path: Path) -> None:
+    policy, private_key, action, receipt = _bundle(tmp_path)
 
-    with pytest.raises(ReceiptError, match="nonce"):
-        verify_approval_receipt(
-            receipt,
-            policy,
-            action,
-            private_key.public_key(),
-            nonce="run-999/action-1",
-            now=ISSUED_AT + timedelta(seconds=1),
-        )
-
-    wrong_key = Ed25519PrivateKey.generate()
-    with pytest.raises(ReceiptError, match="key ID"):
-        verify_approval_receipt(
-            receipt,
-            policy,
-            action,
-            wrong_key.public_key(),
-            nonce="run-123/action-1",
-            now=ISSUED_AT + timedelta(seconds=1),
-        )
-
-    with pytest.raises(ReceiptError, match="expired"):
-        verify_approval_receipt(
-            receipt,
-            policy,
-            action,
-            private_key.public_key(),
-            nonce="run-123/action-1",
-            now=ISSUED_AT + timedelta(seconds=600),
-        )
-
-    with pytest.raises(ReceiptError, match="future"):
-        verify_approval_receipt(
-            receipt,
-            policy,
-            action,
-            private_key.public_key(),
-            nonce="run-123/action-1",
-            now=ISSUED_AT - timedelta(seconds=61),
-        )
+    cases = [
+        ("nonce", private_key.public_key(), "another-run", ISSUED_AT + timedelta(seconds=1)),
+        ("key ID", Ed25519PrivateKey.generate().public_key(), "run-123/action-1", ISSUED_AT + timedelta(seconds=1)),
+        ("expired", private_key.public_key(), "run-123/action-1", ISSUED_AT + timedelta(seconds=600)),
+        ("future", private_key.public_key(), "run-123/action-1", ISSUED_AT - timedelta(seconds=61)),
+    ]
+    for message, public_key, nonce, now in cases:
+        with pytest.raises(ReceiptError, match=message):
+            verify_approval_receipt(
+                receipt,
+                policy,
+                action,
+                public_key,
+                nonce=nonce,
+                now=now,
+            )
 
 
-def test_signature_payload_and_envelope_mutation_fail_closed(tmp_path: Path) -> None:
-    policy, private_key, action, receipt = _create(tmp_path)
+def test_signature_payload_algorithm_unknown_fields_and_unsigned_receipts_fail(tmp_path: Path) -> None:
+    policy, private_key, action, receipt = _bundle(tmp_path)
 
-    mutations = []
+    bad_signature = copy.deepcopy(receipt)
+    first = bad_signature["signature"][0]
+    bad_signature["signature"] = ("A" if first != "A" else "B") + bad_signature["signature"][1:]
 
-    signature = copy.deepcopy(receipt)
-    signature["signature"] = "A" + signature["signature"][1:]
-    mutations.append(signature)
+    bad_payload = copy.deepcopy(receipt)
+    bad_payload["payload"]["decision"]["reason"] = "Mutated reason"
 
-    payload = copy.deepcopy(receipt)
-    payload["payload"]["decision"]["reason"] = "Mutated reason"
-    mutations.append(payload)
-
-    algorithm = copy.deepcopy(receipt)
-    algorithm["algorithm"] = "none"
-    mutations.append(algorithm)
+    bad_algorithm = copy.deepcopy(receipt)
+    bad_algorithm["algorithm"] = "none"
 
     unknown = copy.deepcopy(receipt)
     unknown["extra"] = True
-    mutations.append(unknown)
 
     unsigned = copy.deepcopy(receipt)
     unsigned["signature"] = ""
-    mutations.append(unsigned)
 
-    for mutated in mutations:
+    for value in (bad_signature, bad_payload, bad_algorithm, unknown, unsigned):
         with pytest.raises(ReceiptError):
             verify_approval_receipt(
-                mutated,
+                value,
                 policy,
                 action,
                 private_key.public_key(),
@@ -270,37 +233,25 @@ def test_signature_payload_and_envelope_mutation_fail_closed(tmp_path: Path) -> 
             )
 
 
-def test_receipts_can_only_be_created_for_approval_and_lifetime_is_bounded(
-    tmp_path: Path,
-) -> None:
+def test_only_approval_can_be_signed_and_lifetime_is_bounded(tmp_path: Path) -> None:
     private_key = Ed25519PrivateKey.generate()
+    for effect in ("allow", "deny"):
+        policy = load_policy(_write_policy(tmp_path, name=f"{effect}.yaml", effect=effect))
+        with pytest.raises(ReceiptError, match=f"got {effect}"):
+            create_approval_receipt(
+                policy,
+                _action(),
+                private_key,
+                nonce=effect,
+                now=ISSUED_AT,
+            )
 
-    allow_policy = load_policy(_write_policy(tmp_path, name="allow.yaml", push_effect="allow"))
-    with pytest.raises(ReceiptError, match="got allow"):
-        create_approval_receipt(
-            allow_policy,
-            _approval_action(),
-            private_key,
-            nonce="allow",
-            now=ISSUED_AT,
-        )
-
-    deny_policy = load_policy(_write_policy(tmp_path, name="deny.yaml", push_effect="deny"))
-    with pytest.raises(ReceiptError, match="got deny"):
-        create_approval_receipt(
-            deny_policy,
-            _approval_action(),
-            private_key,
-            nonce="deny",
-            now=ISSUED_AT,
-        )
-
-    approval_policy = load_policy(_write_policy(tmp_path, name="approval.yaml"))
+    policy = load_policy(_write_policy(tmp_path, name="approval.yaml"))
     for invalid in (0, -1, MAX_RECEIPT_LIFETIME_SECONDS + 1):
         with pytest.raises(ReceiptError, match="expires_in"):
             create_approval_receipt(
-                approval_policy,
-                _approval_action(),
+                policy,
+                _action(),
                 private_key,
                 nonce="lifetime",
                 expires_in=invalid,
@@ -308,45 +259,40 @@ def test_receipts_can_only_be_created_for_approval_and_lifetime_is_bounded(
             )
 
 
-def test_key_generation_uses_expected_formats_permissions_and_refuses_overwrite(
-    tmp_path: Path,
-) -> None:
+def test_key_and_receipt_files_are_strict_private_and_not_logged(tmp_path: Path) -> None:
     private_path = tmp_path / "keys" / "private.pem"
     public_path = tmp_path / "keys" / "public.pem"
-
     key_id = generate_receipt_key_pair(private_path, public_path)
     private_key = load_receipt_private_key(private_path)
     public_key = load_receipt_public_key(public_path)
-
     assert key_id.startswith("sha256:")
     assert private_key.public_key().public_bytes_raw() == public_key.public_bytes_raw()
     assert b"BEGIN PRIVATE KEY" in private_path.read_bytes()
     assert b"BEGIN PUBLIC KEY" in public_path.read_bytes()
-
     if os.name == "posix":
         assert private_path.stat().st_mode & 0o777 == 0o600
+
+    policy = load_policy(_write_policy(tmp_path))
+    action = _action()
+    receipt = create_approval_receipt(
+        policy,
+        action,
+        private_key,
+        nonce="file-test",
+        now=ISSUED_AT,
+    )
+    receipt_path = tmp_path / "receipts" / "approval.json"
+    write_receipt(receipt, receipt_path)
+    assert load_receipt(receipt_path) == receipt
+    assert private_key.private_bytes_raw() not in receipt_path.read_bytes()
+    assert not (tmp_path / "audit.jsonl").exists()
+    if os.name == "posix":
+        assert receipt_path.stat().st_mode & 0o777 == 0o600
 
     with pytest.raises(ReceiptError, match="already exists"):
         generate_receipt_key_pair(private_path, public_path)
     with pytest.raises(ReceiptError, match="must be different"):
         generate_receipt_key_pair(tmp_path / "same.pem", tmp_path / "same.pem")
-
-
-def test_receipt_file_is_private_sized_strict_and_does_not_touch_audit(tmp_path: Path) -> None:
-    policy, private_key, action, receipt = _create(tmp_path)
-    receipt_path = tmp_path / "receipts" / "approval.json"
-    write_receipt(receipt, receipt_path)
-
-    loaded = load_receipt(receipt_path)
-    assert loaded == receipt
-    if os.name == "posix":
-        assert receipt_path.stat().st_mode & 0o777 == 0o600
-    assert not (tmp_path / ".kepenk" / "audit.jsonl").exists()
-
-    private_pem = private_key.private_bytes_raw()
-    rendered = receipt_path.read_bytes()
-    assert private_pem not in rendered
-
     with pytest.raises(ReceiptError, match="already exists"):
         write_receipt(receipt, receipt_path)
 
@@ -355,119 +301,58 @@ def test_receipt_file_is_private_sized_strict_and_does_not_touch_audit(tmp_path:
     with pytest.raises(ReceiptError, match="exceeds"):
         load_receipt(oversized)
 
-    verify_approval_receipt(
-        loaded,
-        policy,
-        action,
-        private_key.public_key(),
-        nonce="run-123/action-1",
-        now=ISSUED_AT + timedelta(seconds=1),
-    )
 
-
-def test_cli_key_create_verify_are_separate_from_execution_and_audit(
-    tmp_path: Path,
-    capsys,
-) -> None:
+def test_cli_key_create_verify_are_separate_from_execution(tmp_path: Path, capsys) -> None:
     policy_path = _write_policy(tmp_path)
     private_path = tmp_path / "private.pem"
     public_path = tmp_path / "public.pem"
     receipt_path = tmp_path / "approval.json"
 
-    key_code = cli_main(
-        [
-            "generate-receipt-key",
-            "--private-key",
-            str(private_path),
-            "--public-key",
-            str(public_path),
-        ]
-    )
+    assert cli_main([
+        "generate-receipt-key",
+        "--private-key", str(private_path),
+        "--public-key", str(public_path),
+    ]) == 0
     key_output = json.loads(capsys.readouterr().out)
-    assert key_code == 0
     assert key_output["created"] is True
-    assert "PRIVATE KEY" not in json.dumps(key_output)
+    assert "BEGIN PRIVATE KEY" not in json.dumps(key_output)
 
-    create_code = cli_main(
-        [
-            "--policy",
-            str(policy_path),
-            "create-receipt",
-            "--private-key",
-            str(private_path),
-            "--nonce",
-            "cli-run/action-1",
-            "--action",
-            "shell",
-            "--command",
-            "git push origin main",
-            "--repository",
-            "example/project",
-            "--metadata",
-            "workflow=release",
-            "--metadata",
-            "attempt=1",
-            "--output",
-            str(receipt_path),
-        ]
-    )
-    assert create_code == 0
+    action_args = [
+        "--action", "shell",
+        "--command", "git push origin main",
+        "--repository", "example/project",
+        "--metadata", "workflow=release",
+    ]
+    assert cli_main([
+        "--policy", str(policy_path),
+        "create-receipt",
+        "--private-key", str(private_path),
+        "--nonce", "cli-run/action-1",
+        "--output", str(receipt_path),
+        *action_args,
+    ]) == 0
     assert capsys.readouterr().out == ""
-    assert receipt_path.exists()
-    assert not (tmp_path / ".kepenk" / "audit.jsonl").exists()
+    assert not (tmp_path / "audit.jsonl").exists()
 
-    verify_code = cli_main(
-        [
-            "--policy",
-            str(policy_path),
-            "verify-receipt",
-            "--receipt",
-            str(receipt_path),
-            "--public-key",
-            str(public_path),
-            "--nonce",
-            "cli-run/action-1",
-            "--action",
-            "shell",
-            "--command",
-            "git push origin main",
-            "--repository",
-            "example/project",
-            "--metadata",
-            "workflow=release",
-            "--metadata",
-            "attempt=1",
-        ]
-    )
-    verified = json.loads(capsys.readouterr().out)
-    assert verify_code == 0
-    assert verified["valid"] is True
-    assert not (tmp_path / ".kepenk" / "audit.jsonl").exists()
+    assert cli_main([
+        "--policy", str(policy_path),
+        "verify-receipt",
+        "--receipt", str(receipt_path),
+        "--public-key", str(public_path),
+        "--nonce", "cli-run/action-1",
+        *action_args,
+    ]) == 0
+    assert json.loads(capsys.readouterr().out)["valid"] is True
+    assert not (tmp_path / "audit.jsonl").exists()
 
-    wrong_nonce_code = cli_main(
-        [
-            "--policy",
-            str(policy_path),
-            "verify-receipt",
-            "--receipt",
-            str(receipt_path),
-            "--public-key",
-            str(public_path),
-            "--nonce",
-            "another-run/action-1",
-            "--action",
-            "shell",
-            "--command",
-            "git push origin main",
-            "--repository",
-            "example/project",
-            "--metadata",
-            "workflow=release",
-            "--metadata",
-            "attempt=1",
-        ]
-    )
+    assert cli_main([
+        "--policy", str(policy_path),
+        "verify-receipt",
+        "--receipt", str(receipt_path),
+        "--public-key", str(public_path),
+        "--nonce", "another-run/action-1",
+        *action_args,
+    ]) == EXIT_USAGE
     captured = capsys.readouterr()
-    assert wrong_nonce_code == EXIT_USAGE
     assert captured.out == ""
     assert "nonce" in captured.err
