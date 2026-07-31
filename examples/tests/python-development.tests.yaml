@@ -1,0 +1,59 @@
+# yaml-language-server: $schema=../../schemas/kepenk-tests-v1.schema.json
+version: 1
+
+cases:
+  - id: allow-pytest
+    action:
+      type: shell
+      command: python -m pytest
+    expect:
+      effect: allow
+      rule_id: allow-python-tests
+
+  - id: allow-ruff-check
+    action:
+      type: shell
+      command: ruff check .
+    expect:
+      effect: allow
+      rule_id: allow-python-lint-and-types
+
+  - id: allow-local-build
+    action:
+      type: shell
+      command: python -m build
+    expect:
+      effect: allow
+      rule_id: allow-local-package-build
+
+  - id: require-dependency-install-approval
+    action:
+      type: shell
+      command: python -m pip install requests
+    expect:
+      effect: approval
+      rule_id: require-approval-for-dependency-install
+
+  - id: require-package-upload-approval
+    action:
+      type: shell
+      command: python -m twine upload dist/*
+    expect:
+      effect: approval
+      rule_id: require-approval-for-package-upload
+
+  - id: deny-root-delete
+    action:
+      type: shell
+      command: rm -rf /
+    expect:
+      effect: deny
+      rule_id: deny-destructive-root-delete
+
+  - id: unmatched-command-uses-default
+    action:
+      type: shell
+      command: echo hello
+    expect:
+      effect: approval
+      rule_id: null
