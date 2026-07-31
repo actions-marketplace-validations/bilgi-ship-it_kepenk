@@ -4,7 +4,13 @@ All notable changes will be documented here.
 
 ## [Unreleased]
 
-_No unreleased changes yet._
+### Changed
+
+- refreshed the Ustaca AI founding-team case study, adopter registry, example manifest, and public evidence snapshot after the pilot moved to `v0.4.0` and began validating `.kepenk/adoption.json` in CI
+
+### Security
+
+- the refreshed evidence continues to classify Ustaca AI as founding-team usage and does not change verified independent adopters or recorded outside contributors from zero
 
 ## [0.4.0] - 2026-07-31
 
