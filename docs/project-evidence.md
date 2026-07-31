@@ -68,9 +68,10 @@ The repository keeps visible, unassigned work for outside contributors:
 
 - [GitLab CI integration guide — #57](https://github.com/bilgi-ship-it/kepenk/issues/57);
 - [Azure Pipelines integration guide — #58](https://github.com/bilgi-ship-it/kepenk/issues/58);
-- [OpenTelemetry-compatible redacted audit export — #59](https://github.com/bilgi-ship-it/kepenk/issues/59).
+- [OpenTelemetry-compatible redacted audit export — #59](https://github.com/bilgi-ship-it/kepenk/issues/59);
+- [first independent public adopter — #65](https://github.com/bilgi-ship-it/kepenk/issues/65).
 
-The first two are documentation-focused `good first issue` tasks. The third starts with a reviewed privacy and field-mapping design.
+The first two are documentation-focused `good first issue` tasks. The third starts with a reviewed privacy and field-mapping design. The fourth requires a genuinely independent public repository and maintainer consent; another founding-team repository cannot satisfy it.
 
 ## Metrics policy
 
