@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bilgi-ship-it/kepenk/blob/main/schemas/kepenk-adoption-evidence-v1.schema.json",
+  "title": "Kepenk adoption evidence version 1",
+  "description": "Offline public integration evidence. Structural validity is not proof of ownership, identity, availability, security, or independent adoption.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "classification",
+    "repository",
+    "repository_url",
+    "maintainer",
+    "maintainer_url",
+    "maintainer_consent",
+    "integration",
+    "kepenk_version",
+    "evidence_url",
+    "verified_on"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "classification": {
+      "enum": [
+        "independent_adopter",
+        "founding_team_pilot"
+      ]
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300,
+      "pattern": "^[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)+$"
+    },
+    "repository_url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://[^/?#]+(?:/[^?#]*)?$"
+    },
+    "maintainer": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9_.@/-]+$"
+    },
+    "maintainer_url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://[^/?#]+(?:/[^?#]*)?$"
+    },
+    "maintainer_consent": {
+      "const": true
+    },
+    "integration": {
+      "enum": [
+        "github_action",
+        "pre_commit",
+        "cli",
+        "jsonl",
+        "mcp",
+        "other"
+      ]
+    },
+    "kepenk_version": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 100,
+      "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$"
+    },
+    "evidence_url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://[^/?#]+(?:/[^?#]*)?$"
+    },
+    "verified_on": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
