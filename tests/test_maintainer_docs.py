@@ -20,7 +20,7 @@ def test_maintainer_policy_has_targets_boundaries_and_measurement() -> None:
     assert "Release cadence" in policy
     assert "Measuring the targets" in policy
     assert "GitHub Security Advisories" in policy
-    assert "one-time use" in policy
+    assert "does not claim a response-rate percentage" in policy
 
 
 def test_readme_contributing_and_roadmap_link_maintenance_policy() -> None:
