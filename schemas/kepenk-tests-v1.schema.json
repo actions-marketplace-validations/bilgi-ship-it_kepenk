@@ -53,6 +53,9 @@
         "host": {
           "type": ["string", "null"]
         },
+        "repository": {
+          "type": ["string", "null"]
+        },
         "metadata": {
           "type": "object"
         }

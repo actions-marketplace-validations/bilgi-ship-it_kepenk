@@ -47,6 +47,10 @@ def _parser() -> argparse.ArgumentParser:
         default=os.environ.get("KEPENK_ACTION_HOST", ""),
     )
     parser.add_argument(
+        "--repository",
+        default=os.environ.get("KEPENK_ACTION_REPOSITORY", ""),
+    )
+    parser.add_argument(
         "--metadata-json",
         default=os.environ.get("KEPENK_ACTION_METADATA_JSON", "{}"),
     )
@@ -124,6 +128,7 @@ def _decision_summary(policy_path: str, decision: Decision) -> str:
             f"| Command | {_code(action.command or '')} |",
             f"| Path | {_code(action.path or '')} |",
             f"| Host | {_code(action.host or '')} |",
+            f"| Repository | {_code(action.repository or '')} |",
         ]
     )
 
@@ -174,6 +179,7 @@ def main(argv: list[str] | None = None) -> int:
             command=args.command or None,
             path=args.path or None,
             host=args.host or None,
+            repository=args.repository or None,
             metadata=_metadata(args.metadata_json),
         )
         decision = PolicyEngine(policy).evaluate(action)

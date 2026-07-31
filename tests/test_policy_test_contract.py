@@ -22,6 +22,7 @@ def test_policy_test_schema_contract() -> None:
         "command",
         "path",
         "host",
+        "repository",
         "metadata",
     }
     assert set(schema["$defs"]["expectation"]["required"]) == {"effect", "rule_id"}

@@ -43,6 +43,10 @@ class PolicyEngine:
                 return False
             if key == "host_glob" and not self._glob_matches(action.host, expected):
                 return False
+            if key == "repository_glob" and not self._glob_matches(
+                action.repository, expected
+            ):
+                return False
             if key == "metadata" and not self._metadata_matches(action.metadata, expected):
                 return False
         return True

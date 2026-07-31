@@ -31,8 +31,13 @@ Pin Kepenk to a reviewed commit SHA or immutable release tag in production workf
     mode: check
     policy: kepenk.yaml
     action_type: shell
+    repository: ${{ github.repository }}
     command: twine upload dist/*
 ```
+
+The `repository` input is optional and explicit. Kepenk does not automatically read `${{ github.repository }}` or inspect the checkout. Supply it only when the policy uses `repository_glob`.
+
+Repository context is caller-provided policy data, not authentication. Protect the workflow definition and do not allow untrusted input to select a lower-risk repository identity.
 
 The step exits with Kepenk's documented codes:
 
@@ -43,7 +48,7 @@ The step exits with Kepenk's documented codes:
 
 ## Outputs
 
-The action exposes `valid`, `effect`, `rule_id`, `reason`, and `rule_count`. A Markdown result is also written to the GitHub job summary.
+The action exposes `valid`, `effect`, `rule_id`, `reason`, and `rule_count`. A Markdown result is also written to the GitHub job summary. The summary includes the explicit repository context when one is supplied.
 
 When a workflow intentionally tests an `approval` or `deny` decision, set `continue-on-error: true` on that check step and assert both the outputs and `steps.<id>.outcome` in a later step. Do not place a protected execution step after an approval or denial unless the workflow explicitly gates it on an allowed decision.
 
@@ -56,8 +61,11 @@ with:
   mode: check
   action_type: deployment
   host: api.example.com
+  repository: example/project
   metadata_json: '{"environment":"production","region":"eu"}'
 ```
+
+Use the dedicated `repository` input for repository matching rather than hiding that value inside metadata. See the [repository-context guide](../repository-context.md).
 
 ## Scope
 

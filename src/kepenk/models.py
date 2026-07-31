@@ -13,6 +13,7 @@ class Action:
     command: str | None = None
     path: str | None = None
     host: str | None = None
+    repository: str | None = None
     metadata: Mapping[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -21,6 +22,7 @@ class Action:
             "command": self.command,
             "path": self.path,
             "host": self.host,
+            "repository": self.repository,
             "metadata": dict(self.metadata),
         }
 

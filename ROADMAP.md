@@ -29,12 +29,13 @@ The immediate goal is to make Kepenk easy to adopt, demonstrate, and integrate f
 - [x] MCP policy-gate adapter ([#29](https://github.com/bilgi-ship-it/kepenk/issues/29))
 - [x] documented compatibility contract for integrations ([#30](https://github.com/bilgi-ship-it/kepenk/issues/30))
 - [x] tagged `v0.2.0` GitHub Release with verified wheel and source distribution ([#33](https://github.com/bilgi-ship-it/kepenk/issues/33))
+- [x] tagged `v0.2.1` portability patch for non-Python consumer repositories ([#48](https://github.com/bilgi-ship-it/kepenk/issues/48))
 
 ## v0.3 — Maintainer workflows
 
 - [x] policy packs for release and package publishing
 - [x] declarative policy test suites for expected decisions ([#37](https://github.com/bilgi-ship-it/kepenk/issues/37))
-- [ ] repository-scoped approval contexts ([#39](https://github.com/bilgi-ship-it/kepenk/issues/39))
+- [x] repository-scoped approval contexts ([#39](https://github.com/bilgi-ship-it/kepenk/issues/39))
 - [ ] signed approval receipts ([#40](https://github.com/bilgi-ship-it/kepenk/issues/40))
 - [ ] audit export in SARIF format ([#41](https://github.com/bilgi-ship-it/kepenk/issues/41))
 - [ ] OpenTelemetry-compatible audit export

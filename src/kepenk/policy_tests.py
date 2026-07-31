@@ -13,7 +13,7 @@ from .models import Action, Decision, Effect
 _VALID_EFFECTS: set[str] = {"allow", "approval", "deny"}
 _ROOT_KEYS = {"version", "cases"}
 _CASE_KEYS = {"id", "action", "expect"}
-_ACTION_KEYS = {"type", "command", "path", "host", "metadata"}
+_ACTION_KEYS = {"type", "command", "path", "host", "repository", "metadata"}
 _EXPECTATION_KEYS = {"effect", "rule_id"}
 
 
@@ -134,6 +134,7 @@ def _load_action(value: Any, case_id: str) -> Action:
         command=_optional_string(raw.get("command"), f"{field_name}.command"),
         path=_optional_string(raw.get("path"), f"{field_name}.path"),
         host=_optional_string(raw.get("host"), f"{field_name}.host"),
+        repository=_optional_string(raw.get("repository"), f"{field_name}.repository"),
         metadata=metadata,
     )
 
