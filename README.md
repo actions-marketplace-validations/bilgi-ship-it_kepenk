@@ -1,6 +1,6 @@
 # Kepenk
 
-[![OpenSSF Baseline](https://www.bestpractices.dev/projects/13915/baseline)](https://www.bestpractices.dev/projects/13915)
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/13915/baseline)](https://www.bestpractices.dev/projects/13915) [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/bilgi-ship-it/kepenk/badge)](https://scorecard.dev/viewer/?uri=github.com/bilgi-ship-it/kepenk)
 
 **A deterministic approval and audit gate for AI coding agents.**
 
