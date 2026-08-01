@@ -1,5 +1,7 @@
 # Kepenk
 
+[![OpenSSF Baseline](https://www.bestpractices.dev/projects/13915/baseline)](https://www.bestpractices.dev/projects/13915)
+
 **A deterministic approval and audit gate for AI coding agents.**
 
 Kepenk evaluates structured actions against a local policy and returns `allow`, `approval`, or `deny`. It is provider-neutral, local-first, and intended for coding agents, command-line automation, continuous integration, and open-source maintainer workflows.
