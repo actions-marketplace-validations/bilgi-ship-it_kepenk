@@ -7,12 +7,13 @@ on:
       - .github/workflows/release-v0.1.0.yml
   workflow_dispatch:
 
-permissions:
-  contents: write
-  issues: write
+permissions: read-all
 
 jobs:
   release:
+    permissions:
+      contents: write
+      issues: write
     runs-on: ubuntu-latest
     env:
       RELEASE_SHA: 6739a651a1a09363be0c9f4cce469861688e65b1
