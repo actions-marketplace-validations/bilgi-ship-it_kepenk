@@ -34,7 +34,7 @@ mcp = [
   "mcp>=2,<3",
 ]
 dev = [
-  "pytest>=8.3,<9",
+  "pytest>=8.3,<10",
   "jsonschema>=4.23,<5",
   "ruff>=0.9,<1",
   "mypy>=1.14,<2",
