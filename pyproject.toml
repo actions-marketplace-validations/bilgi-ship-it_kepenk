@@ -44,7 +44,7 @@ dev = [
 ]
 release = [
   "build>=1.2,<2",
-  "twine>=6,<7",
+  "twine>=6,<8",
 ]
 
 [project.scripts]
